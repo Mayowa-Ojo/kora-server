@@ -17,16 +17,16 @@ type Post struct {
 	Views       int                  `json:"views"        bson:"views"`
 	Shares      int                  `json:"shares"       bson:"shares"`
 	SharedBy    []User               `json:"sharedBy"     bson:"shared_by"`
-	Tags        string               `json:"tags"         bson:"tags"`
-	UpvotedBy   []primitive.ObjectID `json:"upvotedBy"    bson:"upvoted_by"`
-	DownvotedBy []primitive.ObjectID `json:"downvotedBy"  bson:"downvoted_by"`
+	Tags        []string             `json:"tags"         bson:"tags"`
+	UpvotedBy   []primitive.ObjectID `json:"-"            bson:"upvoted_by"`
+	DownvotedBy []primitive.ObjectID `json:"-"            bson:"downvoted_by"`
 	PostType    string               `json:"postType"     bson:"post_type"`
 	Topics      []Topic              `json:"topics"       bson:"topics"`
-	Subscribers []primitive.ObjectID `json:"subscribers"  bson:"subscribers"`
+	Followers   []primitive.ObjectID `json:"-"            bson:"followers"`
 	Author      *User                `json:"author"       bson:"author"`
-	Answers     []primitive.ObjectID `json:"answers"      bson:"answers"`
+	Answers     []primitive.ObjectID `json:"-"            bson:"answers"`
 	Answered    bool                 `json:"answered"     bson:"answered"`
-	ResponseTo  primitive.ObjectID   `json:"responseTo"   bson:"response_to"`
+	ResponseTo  primitive.ObjectID   `json:"-"            bson:"response_to"`
 	Comments    []Comment            `json:"comments"     bson:"comments"`
 	CreatedAt   time.Time            `json:"createdAt"    bson:"created_at"`
 	UpdatedAt   time.Time            `json:"updatedAt"    bson:"updated_at"`

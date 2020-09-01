@@ -22,14 +22,14 @@ type User struct {
 	Credential   string               `json:"credential"   bson:"credential"`
 	Avatar       string               `json:"avatar"       bson:"avatar"`
 	Views        int                  `json:"views"        bson:"views"`
-	Shares       []primitive.ObjectID `json:"shares"       bson:"shares"`
+	Shares       []primitive.ObjectID `json:"-"            bson:"shares"`
 	Upvotes      int                  `json:"upvotes"      bson:"upvotes"`
 	Downvotes    int                  `json:"downvotes"    bson:"downvotes"`
-	Followers    []primitive.ObjectID `json:"followers"    bson:"followers"`
-	Following    []primitive.ObjectID `json:"following"    bson:"following"`
-	Answers      []primitive.ObjectID `json:"answers"      bson:"answers"`
-	Questions    []primitive.ObjectID `json:"questions"    bson:"questions"`
-	Posts        []primitive.ObjectID `json:"posts"        bson:"posts"`
+	Followers    []primitive.ObjectID `json:"-"            bson:"followers"`
+	Following    []primitive.ObjectID `json:"-"            bson:"following"`
+	Answers      []primitive.ObjectID `json:"-"            bson:"answers"`
+	Questions    []primitive.ObjectID `json:"-"            bson:"questions"`
+	Posts        []primitive.ObjectID `json:"-"            bson:"posts"`
 	Knowledge    []Topic              `json:"knowledge"    bson:"knowledge"`
 	Spaces       []Space              `json:"spaces"       bson:"spaces"`
 	PinnedAnswer Post                 `json:"pinnedAnswer" bson:"pinned_answer"`

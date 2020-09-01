@@ -11,9 +11,9 @@ import (
 type Topic struct {
 	ID        primitive.ObjectID   `json:"id,omitempty" bson:"_id,omitempty"`
 	Name      string               `json:"name"         bson:"name"`
-	Followers []primitive.ObjectID `json:"followers"    bson:"followers"`
-	Posts     []primitive.ObjectID `json:"posts"        bson:"posts"`
-	Spaces    []primitive.ObjectID `json:"spaces"       bson:"spaces"`
+	Followers []primitive.ObjectID `json:"-"            bson:"followers"`
+	Posts     []primitive.ObjectID `json:"-"            bson:"posts"`
+	Spaces    []primitive.ObjectID `json:"-"            bson:"spaces"`
 	CreatedAt time.Time            `json:"createdAt"    bson:"created_at"`
 	UpdatedAt time.Time            `json:"updatedAt"    bson:"updated_at"`
 	DeletedAt time.Time            `json:"deletedAt"    bson:"deleted_at"`

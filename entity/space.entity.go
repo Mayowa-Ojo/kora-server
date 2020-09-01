@@ -15,11 +15,11 @@ type Space struct {
 	Details      string               `json:"details"      bson:"details"`
 	Icon         string               `json:"icon"         bson:"icon"`
 	CoverPhoto   string               `json:"coverPhoto"   bson:"cover_photo"`
-	Followers    []primitive.ObjectID `json:"followers"    bson:"followers"`
+	Followers    []primitive.ObjectID `json:"-"            bson:"followers"`
 	Admins       []User               `json:"admins"       bson:"admins"`
 	Moderators   []User               `json:"moderators"   bson:"moderators"`
 	Contributors []User               `json:"contributors" bson:"contributors"`
-	Posts        []primitive.ObjectID `json:"posts"        bson:"posts"`
+	Posts        []primitive.ObjectID `json:"-"            bson:"posts"`
 	CreatedAt    time.Time            `json:"createdAt"    bson:"created_at"`
 	UpdatedAt    time.Time            `json:"updatedAt"    bson:"updated_at"`
 	DeletedAt    time.Time            `json:"deletedAt"    bson:"deleted_at"`
