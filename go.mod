@@ -5,8 +5,9 @@ go 1.13
 require (
 	github.com/Mayowa-Ojo/gigitty v0.0.0-20200825201145-aabf83a1271f
 	github.com/aws/aws-sdk-go v1.34.13 // indirect
-	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible // indirect
+	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
 	github.com/gofiber/fiber v1.14.4
+	github.com/gofiber/helmet v0.1.2
 	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.2 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
