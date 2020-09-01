@@ -1,15 +1,16 @@
 package utils
 
 import (
+	"github.com/Mayowa-Ojo/kora/types"
 	"github.com/gofiber/fiber"
 )
 
 // Response -
 type Response struct {
-	Ok      bool   `json:"ok"`
-	Message string `json:"message"`
-	Code    int    `json:"code"`
-	Data    Any    `json:"data"`
+	Ok      bool      `json:"ok"`
+	Message string    `json:"message"`
+	Code    int       `json:"code"`
+	Data    types.Any `json:"data"`
 }
 
 // NewResponse -
@@ -18,7 +19,7 @@ func NewResponse() *Response {
 }
 
 // JSONResponse -
-func (r Response) JSONResponse(c *fiber.Ctx, ok bool, code int, message string, data Any) {
+func (r Response) JSONResponse(c *fiber.Ctx, ok bool, code int, message string, data types.Any) {
 	r.Ok = ok
 	r.Code = code
 	r.Message = message
