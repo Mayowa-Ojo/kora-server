@@ -1,6 +1,8 @@
 package constants
 
 const (
-	// GetSingleResource -
+	// GetSingleResource - Fetch a single resource by id
 	GetSingleResource = "/:id"
+	// GetAllResources -
+	GetAllResources = "/"
 )
