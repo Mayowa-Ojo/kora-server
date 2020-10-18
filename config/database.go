@@ -10,22 +10,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// MongoConn -
-type MongoConn struct {
+// DBConn -
+type DBConn struct {
 	Client *mongo.Client
 	DB     *mongo.Database
 }
 
-var (
-	dbName        = "gigitty"
-	mongoURI      = fmt.Sprintf("mongodb://localhost/%s", dbName)
-	clientOptions = options.Client().ApplyURI(mongoURI)
-)
+var conn DBConn
 
-var conn MongoConn
+// InitDB - create a mongo connection
+func InitDB(env *EnvConfig) (*DBConn, error) {
+	mongoURI := fmt.Sprintf("mongodb://localhost/%s", env.DBName)
+	clientOptions := options.Client().ApplyURI(mongoURI)
 
-// Connect - create a mongo connection
-func Connect() (MongoConn, error) {
 	client, err := mongo.NewClient(clientOptions)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -33,13 +30,13 @@ func Connect() (MongoConn, error) {
 	defer cancel()
 
 	err = client.Connect(ctx)
-	db := client.Database(dbName)
+	db := client.Database(env.DBName)
 
 	if err != nil {
-		return conn, err
+		return nil, err
 	}
 
-	conn = MongoConn{
+	conn := &DBConn{
 		Client: client,
 		DB:     db,
 	}
