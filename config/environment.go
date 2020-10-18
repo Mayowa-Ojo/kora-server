@@ -29,7 +29,5 @@ func NewEnvConfig() *EnvConfig {
 		fmt.Printf("[Error]: could not decode env variables. %s", err)
 	}
 
-	fmt.Printf("[DEBUG]: config - %+v", env)
-
 	return env
 }
