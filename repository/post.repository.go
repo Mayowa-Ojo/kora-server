@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber"
 	"go.mongodb.org/mongo-driver/bson"
 	mg "go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Post - acts as the data access layer/repository for posts
@@ -50,6 +51,23 @@ func (p Post) GetByID(ctx *fiber.Ctx, filter types.Any) (*entity.Post, error) {
 	}
 
 	return post, nil
+}
+
+// GetMany -
+func (p Post) GetMany(ctx *fiber.Ctx, filter types.Any, opts *options.FindOptions) ([]entity.Post, error) {
+	c := p.DB.Collection("posts")
+	posts := make([]entity.Post, 0)
+
+	cur, err := c.Find(ctx.Fasthttp, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := cur.All(ctx.Fasthttp, &posts); err != nil {
+		return nil, err
+	}
+
+	return posts, nil
 }
 
 // Create -
