@@ -1,71 +1,157 @@
 package services
 
 import (
+	"fmt"
+	"strconv"
+
+	"github.com/Mayowa-Ojo/kora/constants"
 	"github.com/Mayowa-Ojo/kora/domain"
-	"github.com/Mayowa-Ojo/kora/types"
+	"github.com/Mayowa-Ojo/kora/entity"
+	"github.com/Mayowa-Ojo/kora/utils"
 	"github.com/gofiber/fiber"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	mg "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Post - acts as the business logic layer/service for posts
-type Post struct {
+// PostService - acts as the business logic layer/service for posts
+type PostService struct {
 	postRepo domain.PostRepository
 	userRepo domain.UserRepository
 }
 
 // NewPostService - creates a new post service instance
 func NewPostService(p domain.PostRepository, u domain.UserRepository) domain.PostService {
-	return &Post{
+	return &PostService{
 		p,
 		u,
 	}
 }
 
 // GetAll - handles business logic to fetch all posts
-func (p Post) GetAll(ctx *fiber.Ctx, opts types.GenericMap) ([]types.GenericMap, error) {
-	var result []types.GenericMap
+func (p PostService) GetAll(ctx *fiber.Ctx) ([]entity.Post, error) {
+	postType := ctx.Query("postType", "answer")
+	limit := ctx.Query("limit", "10")
+	limitInt, err := strconv.ParseInt(limit, 10, 64)
+
 	options := options.Find()
+	options.SetLimit(limitInt)
 
-	if _, ok := opts["limit"]; ok {
-		options.SetLimit(opts["limit"].(int64))
-	}
-	// fetch all answers
-	filter := bson.D{{Key: "post_type", Value: "answer"}}
-	answers, err := p.postRepo.GetMany(ctx, filter, options)
-
-	// fetch all questions
-	filter = bson.D{{Key: "post_type", Value: "question"}}
-	questions, err := p.postRepo.GetMany(ctx, filter, options)
+	filter := bson.D{{Key: "post_type", Value: postType}}
+	result, err := p.postRepo.GetMany(ctx, filter, options)
 
 	if err != nil {
 		return nil, err
 	}
-	// fetch followers count
-	for _, q := range questions {
-		questionMap := make(types.GenericMap, 0)
-		followersCount := len(q.Followers)
-		answersCount := len(q.Answers)
-
-		questionMap["post"] = q
-		questionMap["followersCount"] = followersCount
-		questionMap["answersCount"] = answersCount
-
-		result = append(result, questionMap)
-	}
-
-	for _, a := range answers {
-		answerMap := make(types.GenericMap, 0)
-		answerMap["post"] = a
-
-		result = append(result, answerMap)
-	}
-
 	// Sort results by date
 	return result, nil
 }
 
-// GetAllQuestions -
-func (p Post) GetAllQuestions(ctx *fiber.Ctx, limit int) {
-	return
+// GetOne -
+func (p PostService) GetOne(ctx *fiber.Ctx) (*entity.Post, error) {
+	id := ctx.Params("id")
+	objectID, err := primitive.ObjectIDFromHex(id)
+
+	filter := bson.D{{Key: "_id", Value: objectID}}
+	opts := options.FindOne()
+	opts.SetProjection(bson.D{{}})
+	post, err := p.postRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		if err == mg.ErrNoDocuments {
+			return nil, constants.ErrNotFound
+		}
+
+		return nil, constants.ErrInternalServer
+	}
+
+	return post, nil
+}
+
+// Create -
+func (p PostService) Create(ctx *fiber.Ctx) (*entity.Post, error) {
+	var requestBody struct {
+		Title       string   `json:"title"`
+		Content     string   `json:"content"`
+		ContextLink string   `json:"contextLink"`
+		PostType    string   `json:"postType"`
+		Topics      []string `json:"topics"`
+	}
+
+	err := ctx.BodyParser(&requestBody)
+	if err != nil {
+		return nil, constants.ErrUnprocessableEntity
+	}
+	instance := &entity.Post{
+		PostType: requestBody.PostType,
+	}
+
+	switch requestBody.PostType {
+	case "question":
+		instance.Title = requestBody.Title
+		if contextLink := requestBody.ContextLink; contextLink != "" {
+			instance.ContextLink = requestBody.ContextLink
+		}
+	case "answer":
+		questionID := ctx.Query("question")
+		objectID, err := primitive.ObjectIDFromHex(questionID)
+		if err != nil {
+			return nil, constants.ErrUnprocessableEntity
+		}
+
+		instance.ResponseTo = objectID
+		instance.Title = requestBody.Title
+		instance.Content = requestBody.Content
+	case "post":
+		instance.Content = requestBody.Content
+	}
+
+	err = instance.Validate()
+	if err != nil {
+		return nil, constants.ErrUnprocessableEntity
+	}
+
+	// fetch author for post
+	id, err := utils.GetJwtClaims(ctx, "userId")
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, constants.ErrUnauthorized
+	}
+
+	filter := bson.D{{Key: "_id", Value: objectID}}
+	opts := options.FindOne()
+	opts.SetProjection(bson.D{{}})
+	user, err := p.userRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	instance.Author = user
+
+	topicsObjectID := []primitive.ObjectID{}
+	for _, v := range requestBody.Topics {
+		objectID, err := primitive.ObjectIDFromHex(v)
+		if err != nil {
+			return nil, constants.ErrUnprocessableEntity
+		}
+		topicsObjectID = append(topicsObjectID, objectID)
+	}
+
+	instance.Topics = topicsObjectID
+
+	insertResult, err := p.postRepo.Create(ctx, instance)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	filter = bson.D{{Key: "_id", Value: insertResult.InsertedID}}
+	opts = options.FindOne()
+	opts.SetProjection(bson.D{{}})
+	post, err := p.postRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		fmt.Println(err)
+		return nil, constants.ErrInternalServer
+	}
+
+	return post, nil
 }
