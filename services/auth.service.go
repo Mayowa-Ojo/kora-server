@@ -11,7 +11,9 @@ import (
 	"github.com/Mayowa-Ojo/kora/utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber"
+	"go.mongodb.org/mongo-driver/bson"
 	mg "go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Auth -
@@ -37,7 +39,10 @@ func (a Auth) Login(ctx *fiber.Ctx) (types.GenericMap, error) {
 		return nil, constants.ErrUnprocessableEntity
 	}
 
-	user, err := a.userRepo.GetOne(ctx, types.GenericMap{"email": credentials.Email})
+	filter := bson.D{{Key: "email", Value: credentials.Email}}
+	opts := options.FindOne()
+	opts.SetProjection(bson.D{{}})
+	user, err := a.userRepo.GetOne(ctx, filter, opts)
 	if err != nil {
 		if err == mg.ErrNoDocuments {
 			return nil, constants.ErrNotFound
@@ -82,7 +87,21 @@ func (a Auth) Signup(ctx *fiber.Ctx) (types.GenericMap, error) {
 		return nil, constants.ErrUnprocessableEntity
 	}
 
-	user, err := a.userRepo.GetOne(ctx, types.GenericMap{"email": credentials.Email})
+	filter := bson.D{{Key: "email", Value: credentials.Email}}
+	opts := options.FindOne()
+	opts.SetProjection(bson.D{{}})
+	user, err := a.userRepo.GetOne(ctx, filter, opts)
+	if err != nil && err != mg.ErrNoDocuments {
+		return nil, constants.ErrInternalServer
+	}
+	if user != nil {
+		return nil, constants.ErrResourceExists
+	}
+
+	filter = bson.D{{Key: "username", Value: credentials.Username}}
+	opts = options.FindOne()
+	opts.SetProjection(bson.D{{}})
+	user, err = a.userRepo.GetOne(ctx, filter, opts)
 	if err != nil && err != mg.ErrNoDocuments {
 		return nil, constants.ErrInternalServer
 	}
@@ -112,7 +131,10 @@ func (a Auth) Signup(ctx *fiber.Ctx) (types.GenericMap, error) {
 		return nil, constants.ErrInternalServer
 	}
 
-	user, err = a.userRepo.GetOne(ctx, types.GenericMap{"_id": insertResult.InsertedID})
+	filter = bson.D{{Key: "_id", Value: insertResult.InsertedID}}
+	opts = options.FindOne()
+	opts.SetProjection(bson.D{{}})
+	user, err = a.userRepo.GetOne(ctx, filter, opts)
 	if err != nil {
 		return nil, constants.ErrInternalServer
 	}
