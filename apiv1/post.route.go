@@ -2,8 +2,8 @@ package apiv1
 
 import (
 	"github.com/Mayowa-Ojo/kora/config"
-	"github.com/Mayowa-Ojo/kora/constants"
 	"github.com/Mayowa-Ojo/kora/controllers"
+	"github.com/Mayowa-Ojo/kora/middleware"
 	"github.com/Mayowa-Ojo/kora/repository"
 	"github.com/Mayowa-Ojo/kora/services"
 	"github.com/gofiber/fiber"
@@ -22,5 +22,8 @@ func NewPostRouter(br fiber.Router, conn *config.DBConn) {
 	service := services.NewPostService(postRepo, userRepo)
 	controller := controllers.NewPostController(service)
 
-	router.Get(constants.GetAllResources, controller.GetAll)
+	router.Get("/:id", controller.GetOne)
+	router.Get("/", controller.GetAll)
+	router.Get("/feed", controller.GetFeedForUser)
+	router.Post("/", middleware.AuthorizeRoute(), controller.Create)
 }
