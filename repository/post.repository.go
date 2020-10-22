@@ -39,12 +39,12 @@ func (p Post) GetAll(ctx *fiber.Ctx) ([]entity.Post, error) {
 	return posts, nil
 }
 
-// GetByID -
-func (p Post) GetByID(ctx *fiber.Ctx, filter types.Any) (*entity.Post, error) {
+// GetOne -
+func (p Post) GetOne(ctx *fiber.Ctx, filter types.Any, opts *options.FindOneOptions) (*entity.Post, error) {
 	c := p.DB.Collection("posts")
 	post := new(entity.Post)
 
-	result := c.FindOne(ctx.Fasthttp, filter)
+	result := c.FindOne(ctx.Fasthttp, filter, opts)
 
 	if err := result.Decode(&post); err != nil {
 		return nil, err
