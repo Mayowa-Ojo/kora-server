@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"github.com/Mayowa-Ojo/kora/constants"
 	"github.com/Mayowa-Ojo/kora/types"
 	"github.com/gofiber/fiber"
 )
@@ -15,4 +16,13 @@ func ErrorHandler(ctx *fiber.Ctx, err error) {
 	} else {
 		r.JSONResponse(ctx, false, code, "[Error]: Internal server error", make(types.GenericMap))
 	}
+}
+
+// JWTError -
+func JWTError(ctx *fiber.Ctx, err error) {
+	if err.Error() == "Missing or malformed JWT" {
+		ctx.Next(constants.ErrUnprocessableEntity)
+	}
+
+	ctx.Next(constants.ErrInvalidCredentials)
 }
