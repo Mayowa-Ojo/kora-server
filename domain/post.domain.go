@@ -12,6 +12,7 @@ import (
 type PostService interface {
 	GetAll(ctx *fiber.Ctx) ([]entity.Post, error)
 	GetOne(ctx *fiber.Ctx) (*entity.Post, error)
+	GetFeedForUser(ctx *fiber.Ctx) ([]entity.Post, error)
 	// GetMany(ctx *fiber.Ctx) (*entity.Post, error)
 	Create(ctx *fiber.Ctx) (*entity.Post, error)
 	// UpdateOne(ctx *fiber.Ctx) (*entity.Post, error)
