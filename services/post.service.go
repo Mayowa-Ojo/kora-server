@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/Mayowa-Ojo/kora/constants"
@@ -42,9 +41,9 @@ func (p PostService) GetAll(ctx *fiber.Ctx) ([]entity.Post, error) {
 	result, err := p.postRepo.GetMany(ctx, filter, options)
 
 	if err != nil {
-		return nil, err
+		return nil, constants.ErrInternalServer
 	}
-	// Sort results by date
+
 	return result, nil
 }
 
@@ -149,9 +148,47 @@ func (p PostService) Create(ctx *fiber.Ctx) (*entity.Post, error) {
 	opts.SetProjection(bson.D{{}})
 	post, err := p.postRepo.GetOne(ctx, filter, opts)
 	if err != nil {
-		fmt.Println(err)
 		return nil, constants.ErrInternalServer
 	}
 
 	return post, nil
+}
+
+// GetFeedForUser - fetch posts which satisfies ones of 3 conditions:
+//                  <author of the post is followed by the current user>
+//                  <the post belongs to a space the current user is subscribed to>
+func (p PostService) GetFeedForUser(ctx *fiber.Ctx) ([]entity.Post, error) {
+	userID, err := utils.GetJwtClaims(ctx, "userId")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, constants.ErrUnauthorized
+	}
+
+	filter := bson.D{{Key: "_id", Value: userObjectID}}
+	opts := options.FindOne()
+	opts.SetProjection(bson.D{{}})
+	user, err := p.userRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	if len(user.Following) < 1 && len(user.Spaces) < 1 {
+		return []entity.Post{}, nil
+	}
+
+	filter = bson.D{{
+		Key: "$or",
+		Value: bson.A{
+			bson.D{{Key: "author._id", Value: bson.D{{Key: "$in", Value: user.Following}}}},
+			bson.D{{Key: "space._id", Value: bson.D{{Key: "$in", Value: user.Spaces}}}},
+		},
+	}}
+	postOpts := options.Find()
+	posts, err := p.postRepo.GetMany(ctx, filter, postOpts)
+
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return posts, nil
 }
