@@ -3,9 +3,15 @@ package utils
 import (
 	"errors"
 
+	"github.com/Mayowa-Ojo/kora/constants"
+	"github.com/Mayowa-Ojo/kora/domain"
+	"github.com/Mayowa-Ojo/kora/entity"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber"
 	sid "github.com/ventu-io/go-shortid"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -35,4 +41,22 @@ func GetJwtClaims(ctx *fiber.Ctx, key string) (string, error) {
 	}
 
 	return claims[key].(string), nil
+}
+
+// GetUserFromAuthHeader -
+func GetUserFromAuthHeader(ctx *fiber.Ctx, userRepo domain.UserRepository) (*entity.User, error) {
+	userID, err := GetJwtClaims(ctx, "userId")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, constants.ErrUnauthorized
+	}
+
+	filter := bson.D{{Key: "_id", Value: userObjectID}}
+	opts := options.FindOne()
+	user, err := userRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return user, nil
 }
