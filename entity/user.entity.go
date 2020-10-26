@@ -21,17 +21,17 @@ type User struct {
 	About      string               `json:"about,omitempty"        bson:"about"`
 	Credential string               `json:"credential,omitempty"   bson:"credential"`
 	Avatar     string               `json:"avatar,omitempty"       bson:"avatar"`
-	Views      int                  `json:"views,omitempty"        bson:"views"`
+	Views      int                  `json:"views"                  bson:"views"`
 	Shares     []primitive.ObjectID `json:"-"                      bson:"shares"`
-	Upvotes    int                  `json:"upvotes,omitempty"      bson:"upvotes"`
-	Downvotes  int                  `json:"downvotes,omitempty"    bson:"downvotes"`
+	Upvotes    int                  `json:"upvotes"                bson:"upvotes"`
+	Downvotes  int                  `json:"downvotes"              bson:"downvotes"`
 	Followers  []primitive.ObjectID `json:"-"                      bson:"followers"`
 	Following  []primitive.ObjectID `json:"-"                      bson:"following"`
 	Answers    []primitive.ObjectID `json:"-"                      bson:"answers"`
 	Questions  []primitive.ObjectID `json:"-"                      bson:"questions"`
 	Posts      []primitive.ObjectID `json:"-"                      bson:"posts"`
 	Knowledge  []Topic              `json:"knowledge,omitempty"    bson:"knowledge"`
-	Spaces     []Space              `json:"spaces,omitempty"       bson:"spaces"`
+	Spaces     []primitive.ObjectID `json:"spaces,omitempty"       bson:"spaces"`
 	PinnedPost primitive.ObjectID   `json:"pinnedPost,omitempty"   bson:"pinned_post"`
 	CreatedAt  time.Time            `json:"createdAt"              bson:"created_at"`
 	UpdatedAt  time.Time            `json:"updatedAt"              bson:"updated_at"`
@@ -51,4 +51,15 @@ func (u User) Validate() error {
 		validation.Field(&u.Email, emailRule...),
 		validation.Field(&u.Credential, validation.Length(1, 60)),
 	)
+}
+
+// SetDefaultValues - set default values <[]> to array fields instead of <nil>
+func (u *User) SetDefaultValues() {
+	u.Followers = []primitive.ObjectID{}
+	u.Following = []primitive.ObjectID{}
+	u.Answers = []primitive.ObjectID{}
+	u.Questions = []primitive.ObjectID{}
+	u.Posts = []primitive.ObjectID{}
+	u.Spaces = []primitive.ObjectID{}
+	u.Knowledge = []Topic{}
 }
