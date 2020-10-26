@@ -13,10 +13,9 @@ type Post struct {
 	Title       string               `json:"title,omitempty"        bson:"title"`
 	Content     string               `json:"content,omitempty"      bson:"content"`
 	ContextLink string               `json:"ContextLink,omitempty"  bson:"context_link"`
-	Upvotes     int                  `json:"upvotes,omitempty"      bson:"upvotes"`
-	Downvotes   int                  `json:"downvotes,omitempty"    bson:"downvotes"`
-	Views       int                  `json:"views,omitempty"        bson:"views"`
-	Shares      int                  `json:"shares,omitempty"       bson:"shares"`
+	Upvotes     int                  `json:"upvotes"                bson:"upvotes"`
+	Downvotes   int                  `json:"downvotes"              bson:"downvotes"`
+	Shares      int                  `json:"shares"                 bson:"shares"`
 	SharedBy    []primitive.ObjectID `json:"-"                      bson:"shared_by"`
 	UpvotedBy   []primitive.ObjectID `json:"-"                      bson:"upvoted_by"`
 	DownvotedBy []primitive.ObjectID `json:"-"                      bson:"downvoted_by"`
@@ -39,4 +38,15 @@ func (p Post) Validate() error {
 		validation.Field(&p.Content, validation.When(p.PostType != "question", validation.Required)),
 		validation.Field(&p.PostType, validation.In("post", "answer", "question"), validation.Required),
 	)
+}
+
+// SetDefaultValues - set default values <[]> to array fields instead of <nil>
+func (p *Post) SetDefaultValues() {
+	p.SharedBy = []primitive.ObjectID{}
+	p.UpvotedBy = []primitive.ObjectID{}
+	p.DownvotedBy = []primitive.ObjectID{}
+	p.Topics = []primitive.ObjectID{}
+	p.Followers = []primitive.ObjectID{}
+	p.Answers = []primitive.ObjectID{}
+	p.Comments = []primitive.ObjectID{}
 }
