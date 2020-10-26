@@ -12,9 +12,14 @@ import (
 type PostService interface {
 	GetAll(ctx *fiber.Ctx) ([]entity.Post, error)
 	GetOne(ctx *fiber.Ctx) (*entity.Post, error)
-	GetFeedForUser(ctx *fiber.Ctx) ([]entity.Post, error)
-	// GetMany(ctx *fiber.Ctx) (*entity.Post, error)
 	Create(ctx *fiber.Ctx) (*entity.Post, error)
+	DeleteOne(ctx *fiber.Ctx) error
+	GetFeedForUser(ctx *fiber.Ctx) ([]entity.Post, error)
+	UpvotePostByUser(ctx *fiber.Ctx) error
+	DownvotePostByUser(ctx *fiber.Ctx) error
+	FollowPost(ctx *fiber.Ctx) error
+	UnfollowPost(ctx *fiber.Ctx) error
+	// GetMany(ctx *fiber.Ctx) (*entity.Post, error)
 	// UpdateOne(ctx *fiber.Ctx) (*entity.Post, error)
 	// UpdateMany(ctx *fiber.Ctx) (*entity.Post, error)
 	// DeleteOne(ctx *fiber.Ctx) (*entity.Post, error)
