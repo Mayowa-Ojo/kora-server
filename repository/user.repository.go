@@ -54,11 +54,41 @@ func (u User) GetOne(ctx *fiber.Ctx, filter types.Any, opts *options.FindOneOpti
 	return user, nil
 }
 
+// GetMany -
+func (u User) GetMany(ctx *fiber.Ctx, filter types.Any, opts *options.FindOptions) ([]entity.User, error) {
+	c := u.DB.Collection("users")
+	users := make([]entity.User, 0)
+
+	cur, err := c.Find(ctx.Fasthttp, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := cur.All(ctx.Fasthttp, &users); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
 // Create -
 func (u User) Create(ctx *fiber.Ctx, user entity.User) (*mg.InsertOneResult, error) {
 	c := u.DB.Collection("users")
 
 	result, err := c.InsertOne(ctx.Fasthttp, user)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UpdateOne -
+func (u User) UpdateOne(ctx *fiber.Ctx, filter types.Any, update types.Any) (*mg.UpdateResult, error) {
+	c := u.DB.Collection("users")
+
+	result, err := c.UpdateOne(ctx.Fasthttp, filter, update)
 
 	if err != nil {
 		return nil, err
