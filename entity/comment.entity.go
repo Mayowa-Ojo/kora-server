@@ -9,8 +9,8 @@ import (
 type Comment struct {
 	ID         primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
 	Content    string             `json:"content"      bson:"content"`
-	Author     User               `json:"author"       bson:"author"`
-	ResponseTo Post               `json:"responseTo"   bson:"response_to"`
+	Author     *User              `json:"author"       bson:"author"`
+	ResponseTo primitive.ObjectID `json:"responseTo"   bson:"response_to"`
 	Upvotes    int                `json:"upvotes"      bson:"upvotes"`
 	Downvotes  int                `json:"downvotes"    bson:"downvotes"`
 }
@@ -19,5 +19,7 @@ type Comment struct {
 func (c Comment) Validate() error {
 	return validation.ValidateStruct(&c,
 		validation.Field(&c.Content, validation.Required),
+		validation.Field(&c.Author, validation.Required),
+		validation.Field(&c.ResponseTo, validation.Required),
 	)
 }
