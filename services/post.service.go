@@ -105,24 +105,17 @@ func (p PostService) Create(ctx *fiber.Ctx) (*entity.Post, error) {
 		instance.Content = requestBody.Content
 	}
 
+	instance.SetDefaultValues()
+
 	err = instance.Validate()
 	if err != nil {
 		return nil, constants.ErrUnprocessableEntity
 	}
 
 	// fetch author for post
-	id, err := utils.GetJwtClaims(ctx, "userId")
-	objectID, err := primitive.ObjectIDFromHex(id)
+	user, err := utils.GetUserFromAuthHeader(ctx, p.userRepo)
 	if err != nil {
-		return nil, constants.ErrUnauthorized
-	}
-
-	filter := bson.D{{Key: "_id", Value: objectID}}
-	opts := options.FindOne()
-	opts.SetProjection(bson.D{{}})
-	user, err := p.userRepo.GetOne(ctx, filter, opts)
-	if err != nil {
-		return nil, constants.ErrInternalServer
+		return nil, err
 	}
 
 	instance.Author = user
@@ -143,8 +136,8 @@ func (p PostService) Create(ctx *fiber.Ctx) (*entity.Post, error) {
 		return nil, constants.ErrInternalServer
 	}
 
-	filter = bson.D{{Key: "_id", Value: insertResult.InsertedID}}
-	opts = options.FindOne()
+	filter := bson.D{{Key: "_id", Value: insertResult.InsertedID}}
+	opts := options.FindOne()
 	opts.SetProjection(bson.D{{}})
 	post, err := p.postRepo.GetOne(ctx, filter, opts)
 	if err != nil {
@@ -154,29 +147,37 @@ func (p PostService) Create(ctx *fiber.Ctx) (*entity.Post, error) {
 	return post, nil
 }
 
+// DeleteOne - delete a single post
+func (p PostService) DeleteOne(ctx *fiber.Ctx) error {
+	postID := ctx.Params("postId")
+	postObjectID, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		return constants.ErrUnprocessableEntity
+	}
+
+	filter := bson.D{{Key: "_id", Value: postObjectID}}
+	_, err = p.postRepo.DeleteOne(ctx, filter)
+	if err != nil {
+		return constants.ErrInternalServer
+	}
+
+	return nil
+}
+
 // GetFeedForUser - fetch posts which satisfies ones of 3 conditions:
 //                  <author of the post is followed by the current user>
 //                  <the post belongs to a space the current user is subscribed to>
 func (p PostService) GetFeedForUser(ctx *fiber.Ctx) ([]entity.Post, error) {
-	userID, err := utils.GetJwtClaims(ctx, "userId")
-	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	user, err := utils.GetUserFromAuthHeader(ctx, p.userRepo)
 	if err != nil {
-		return nil, constants.ErrUnauthorized
-	}
-
-	filter := bson.D{{Key: "_id", Value: userObjectID}}
-	opts := options.FindOne()
-	opts.SetProjection(bson.D{{}})
-	user, err := p.userRepo.GetOne(ctx, filter, opts)
-	if err != nil {
-		return nil, constants.ErrInternalServer
+		return nil, err
 	}
 
 	if len(user.Following) < 1 && len(user.Spaces) < 1 {
 		return []entity.Post{}, nil
 	}
 
-	filter = bson.D{{
+	filter := bson.D{{
 		Key: "$or",
 		Value: bson.A{
 			bson.D{{Key: "author._id", Value: bson.D{{Key: "$in", Value: user.Following}}}},
@@ -191,4 +192,115 @@ func (p PostService) GetFeedForUser(ctx *fiber.Ctx) ([]entity.Post, error) {
 	}
 
 	return posts, nil
+}
+
+// UpvotePostByUser - upvote a post and add the current user to upvotedBy list
+func (p PostService) UpvotePostByUser(ctx *fiber.Ctx) error {
+	postID := ctx.Params("postId")
+	postObjectID, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		return constants.ErrUnprocessableEntity
+	}
+
+	user, err := utils.GetUserFromAuthHeader(ctx, p.userRepo)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.D{{Key: "_id", Value: postObjectID}}
+	update := bson.D{
+		{Key: "$inc", Value: bson.D{{Key: "upvotes", Value: 1}}},
+		{Key: "$push", Value: bson.D{{Key: "upvoted_by", Value: user.ID}}},
+	}
+
+	_, err = p.postRepo.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return constants.ErrInternalServer
+	}
+
+	return nil
+}
+
+// DownvotePostByUser - downvote a post and add the current user to downvotedBy list
+func (p PostService) DownvotePostByUser(ctx *fiber.Ctx) error {
+	postID := ctx.Params("postId")
+	postObjectID, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		return constants.ErrUnprocessableEntity
+	}
+
+	user, err := utils.GetUserFromAuthHeader(ctx, p.userRepo)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.D{{Key: "_id", Value: postObjectID}}
+	update := bson.D{
+		{Key: "$inc", Value: bson.D{{Key: "downvotes", Value: 1}}},
+		{Key: "$push", Value: bson.D{{Key: "downvoted_by", Value: user.ID}}},
+	}
+
+	_, err = p.postRepo.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return constants.ErrInternalServer
+	}
+
+	return nil
+}
+
+// FollowPost - follow a post and add user to followers list
+func (p PostService) FollowPost(ctx *fiber.Ctx) error {
+	postID := ctx.Params("postId")
+	postObjectID, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		return constants.ErrUnprocessableEntity
+	}
+
+	user, err := utils.GetUserFromAuthHeader(ctx, p.userRepo)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.D{{Key: "_id", Value: postObjectID}}
+	update := bson.D{{
+		Key: "$push", Value: bson.D{{Key: "followers", Value: user.ID}},
+	}}
+
+	_, err = p.postRepo.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return constants.ErrInternalServer
+	}
+
+	return nil
+}
+
+// UnfollowPost - unfollow a post and remove user from followers list
+func (p PostService) UnfollowPost(ctx *fiber.Ctx) error {
+	postID := ctx.Params("postId")
+	postObjectID, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		return constants.ErrUnprocessableEntity
+	}
+
+	user, err := utils.GetUserFromAuthHeader(ctx, p.userRepo)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.D{{Key: "_id", Value: postObjectID}}
+	update := bson.D{{
+		Key: "$pull", Value: bson.D{{Key: "followers", Value: user.ID}},
+	}}
+
+	_, err = p.postRepo.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return constants.ErrInternalServer
+	}
+
+	return nil
+}
+
+// AddTopicToPost - add a new topic to list of topics
+func (p PostService) AddTopicToPost(ctx *fiber.Ctx) error {
+	return nil
 }
