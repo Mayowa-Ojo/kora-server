@@ -14,4 +14,5 @@ func InitRoutes(app *fiber.App, conn *config.DBConn) {
 	NewTopicRouter(baseRouter, conn)
 	NewCommentRouter(baseRouter, conn)
 	NewUserRouter(baseRouter, conn)
+	NewSpaceRouter(baseRouter, conn)
 }
