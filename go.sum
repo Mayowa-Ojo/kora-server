@@ -15,6 +15,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Mayowa-Ojo/gigitty v0.0.0-20200825201145-aabf83a1271f h1:wef7+5k2/gM4WXI1VXbW3AmC/uvy1pLYWY3wbDM1g5I=
 github.com/Mayowa-Ojo/gigitty v0.0.0-20200825201145-aabf83a1271f/go.mod h1:Dhh1ONxKwv//xavU81VzU7nP7afTmOXT1jgFp6QENc4=
+github.com/Mayowa-Ojo/rattle-snake v0.0.0-20201027074315-10afc40916d1 h1:RFrXBs6MNgQ9O61xYJ8ga/f7uUE10v42NLdlPidZqj8=
+github.com/Mayowa-Ojo/rattle-snake v0.0.0-20201027074315-10afc40916d1/go.mod h1:qhIUH/yCH0KOaLlvcTwTIcEBWoGrpnGGLTgRuBQYRSM=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=

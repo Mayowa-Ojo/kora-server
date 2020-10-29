@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/Mayowa-Ojo/gigitty v0.0.0-20200825201145-aabf83a1271f
+	github.com/Mayowa-Ojo/rattle-snake v0.0.0-20201027074315-10afc40916d1
 	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.34.13 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
