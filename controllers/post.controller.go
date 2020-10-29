@@ -1,46 +1,29 @@
 package controllers
 
 import (
-	"strconv"
-
 	"github.com/Mayowa-Ojo/kora/domain"
-	"github.com/Mayowa-Ojo/kora/types"
 	"github.com/Mayowa-Ojo/kora/utils"
 	"github.com/gofiber/fiber"
 )
 
-// Post - Structre for a post controller
-type Post struct {
-	service domain.PostService
+// PostController - Structure for a post controller
+type PostController struct {
+	postService domain.PostService
+	userService domain.UserService
 }
 
 // NewPostController - Creates post controller instance
-func NewPostController(s domain.PostService) *Post {
-	return &Post{
-		s,
+func NewPostController(p domain.PostService, u domain.UserService) *PostController {
+	return &PostController{
+		p,
+		u,
 	}
 }
 
-// GetAll - Delivers all posts data to the client
-func (p *Post) GetAll(ctx *fiber.Ctx) {
-	limit := ctx.Query("limit", "10")
-	limitInt, err := strconv.ParseInt(limit, 10, 64)
-
+// GetAll - fetch all posts from DB collection
+func (p *PostController) GetAll(ctx *fiber.Ctx) {
+	posts, err := p.postService.GetAll(ctx)
 	if err != nil {
-		err := new(fiber.Error)
-		err.Code = fiber.StatusInternalServerError
-		err.Message = "[Error]: Something went wrong"
-		ctx.Next(err)
-
-		return
-	}
-
-	posts, err := p.service.GetAll(ctx, types.GenericMap{"limit": limitInt})
-
-	if err != nil {
-		err := new(fiber.Error)
-		err.Code = 404
-		err.Message = "[Error]: Resource not found"
 		ctx.Next(err)
 
 		return
@@ -48,4 +31,110 @@ func (p *Post) GetAll(ctx *fiber.Ctx) {
 
 	r := utils.NewResponse()
 	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", posts)
+}
+
+// GetOne - fetch post with matching query [e.g id] from DB collection
+func (p *PostController) GetOne(ctx *fiber.Ctx) {
+	post, err := p.postService.GetOne(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	err = p.userService.UpdateContentViews(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", post)
+}
+
+// Create - create new post and save to DB collection
+func (p *PostController) Create(ctx *fiber.Ctx) {
+	post, err := p.postService.Create(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource created", post)
+}
+
+// DeleteOne - create new post and save to DB collection
+func (p *PostController) DeleteOne(ctx *fiber.Ctx) {
+	if err := p.postService.DeleteOne(ctx); err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource deleted", nil)
+}
+
+// GetFeedForUser -
+func (p *PostController) GetFeedForUser(ctx *fiber.Ctx) {
+	posts, err := p.postService.GetFeedForUser(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", posts)
+}
+
+// UpvotePostByUser -
+func (p *PostController) UpvotePostByUser(ctx *fiber.Ctx) {
+	if err := p.postService.UpvotePostByUser(ctx); err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", nil)
+}
+
+// DownvotePostByUser -
+func (p *PostController) DownvotePostByUser(ctx *fiber.Ctx) {
+	if err := p.postService.DownvotePostByUser(ctx); err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", nil)
+}
+
+// FollowPost -
+func (p *PostController) FollowPost(ctx *fiber.Ctx) {
+	if err := p.postService.FollowPost(ctx); err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", nil)
+}
+
+// UnfollowPost -
+func (p *PostController) UnfollowPost(ctx *fiber.Ctx) {
+	if err := p.postService.UnfollowPost(ctx); err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", nil)
 }
