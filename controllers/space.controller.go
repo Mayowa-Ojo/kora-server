@@ -105,7 +105,7 @@ func (s *SpaceController) DeleteSpaceByAdmin(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource deleted", nil)
+	r.JSONResponse(ctx, true, fiber.StatusNoContent, "[INFO]: Resource deleted", nil)
 }
 
 // FollowSpace -
