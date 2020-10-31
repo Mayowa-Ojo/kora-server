@@ -20,8 +20,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	apiv1.InitRoutes(app, conn)
 	middleware.InitMiddlewares(app)
+
+	apiv1.InitRoutes(app, conn)
+
+	app.Use(middleware.NotFoundError)
 
 	app.Settings.ErrorHandler = utils.ErrorHandler
 
