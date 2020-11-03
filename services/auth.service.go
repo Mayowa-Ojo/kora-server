@@ -78,7 +78,6 @@ func (a Auth) Signup(ctx *fiber.Ctx) (types.GenericMap, error) {
 	var credentials struct {
 		Firstname string `json:"firstname"`
 		Lastname  string `json:"lastname"`
-		Username  string `json:"username"`
 		Email     string `json:"email"`
 		Password  string `json:"password"`
 	}
@@ -89,7 +88,6 @@ func (a Auth) Signup(ctx *fiber.Ctx) (types.GenericMap, error) {
 
 	filter := bson.D{{Key: "email", Value: credentials.Email}}
 	opts := options.FindOne()
-	opts.SetProjection(bson.D{{}})
 	user, err := a.userRepo.GetOne(ctx, filter, opts)
 	if err != nil && err != mg.ErrNoDocuments {
 		return nil, constants.ErrInternalServer
@@ -98,15 +96,17 @@ func (a Auth) Signup(ctx *fiber.Ctx) (types.GenericMap, error) {
 		return nil, constants.ErrResourceExists
 	}
 
-	filter = bson.D{{Key: "username", Value: credentials.Username}}
-	opts = options.FindOne()
-	opts.SetProjection(bson.D{{}})
-	user, err = a.userRepo.GetOne(ctx, filter, opts)
-	if err != nil && err != mg.ErrNoDocuments {
+	username, err := utils.GenerateUsername(
+		map[string]string{
+			"firstname": credentials.Firstname,
+			"lastname":  credentials.Lastname,
+		},
+		ctx,
+		a.userRepo,
+	)
+
+	if err != nil {
 		return nil, constants.ErrInternalServer
-	}
-	if user != nil {
-		return nil, constants.ErrResourceExists
 	}
 
 	hash, err := utils.GeneratePasswordHash(credentials.Password)
@@ -118,7 +118,7 @@ func (a Auth) Signup(ctx *fiber.Ctx) (types.GenericMap, error) {
 		Firstname: credentials.Firstname,
 		Lastname:  credentials.Lastname,
 		Email:     credentials.Email,
-		Username:  credentials.Username,
+		Username:  username,
 		Hash:      hash,
 	}
 
@@ -133,7 +133,6 @@ func (a Auth) Signup(ctx *fiber.Ctx) (types.GenericMap, error) {
 
 	filter = bson.D{{Key: "_id", Value: insertResult.InsertedID}}
 	opts = options.FindOne()
-	opts.SetProjection(bson.D{{}})
 	user, err = a.userRepo.GetOne(ctx, filter, opts)
 	if err != nil {
 		return nil, constants.ErrInternalServer
