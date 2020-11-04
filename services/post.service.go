@@ -70,11 +70,10 @@ func (p PostService) GetOne(ctx *fiber.Ctx) (*entity.Post, error) {
 // Create -
 func (p PostService) Create(ctx *fiber.Ctx) (*entity.Post, error) {
 	var requestBody struct {
-		Title       string   `json:"title"`
-		Content     string   `json:"content"`
-		ContextLink string   `json:"contextLink"`
-		PostType    string   `json:"postType"`
-		Topics      []string `json:"topics"`
+		Title       string `json:"title"`
+		Content     string `json:"content"`
+		ContextLink string `json:"contextLink"`
+		PostType    string `json:"postType"`
 	}
 
 	err := ctx.BodyParser(&requestBody)
@@ -119,17 +118,6 @@ func (p PostService) Create(ctx *fiber.Ctx) (*entity.Post, error) {
 	}
 
 	instance.Author = user
-
-	topicsObjectID := []primitive.ObjectID{}
-	for _, v := range requestBody.Topics {
-		objectID, err := primitive.ObjectIDFromHex(v)
-		if err != nil {
-			return nil, constants.ErrUnprocessableEntity
-		}
-		topicsObjectID = append(topicsObjectID, objectID)
-	}
-
-	instance.Topics = topicsObjectID
 
 	insertResult, err := p.postRepo.Create(ctx, instance)
 	if err != nil {
@@ -301,6 +289,50 @@ func (p PostService) UnfollowPost(ctx *fiber.Ctx) error {
 }
 
 // AddTopicToPost - add a new topic to list of topics
-func (p PostService) AddTopicToPost(ctx *fiber.Ctx) error {
-	return nil
+func (p PostService) AddTopicToPost(ctx *fiber.Ctx) (*entity.Post, error) {
+	var requestBody struct {
+		Topics []string `json:"topics"`
+	}
+
+	if err := ctx.BodyParser(&requestBody); err != nil {
+		return nil, constants.ErrUnprocessableEntity
+	}
+
+	topicsObjectID := []primitive.ObjectID{}
+	for _, v := range requestBody.Topics {
+		objectID, err := primitive.ObjectIDFromHex(v)
+		if err != nil {
+			return nil, constants.ErrUnprocessableEntity
+		}
+		topicsObjectID = append(topicsObjectID, objectID)
+	}
+
+	postID := ctx.Params("postId")
+	postObjectID, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		return nil, constants.ErrUnprocessableEntity
+	}
+
+	filter := bson.D{{Key: "_id", Value: postObjectID}}
+	update := bson.D{{
+		Key: "$push",
+		Value: bson.D{{
+			Key:   "topics",
+			Value: bson.D{{Key: "$each", Value: topicsObjectID}},
+		}},
+	}}
+
+	result, err := p.postRepo.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	filter = bson.D{{Key: "_id", Value: result.UpsertedID}}
+	opts := options.FindOne()
+	post, err := p.postRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return post, nil
 }
