@@ -2,11 +2,12 @@ package apiv1
 
 import (
 	"github.com/Mayowa-Ojo/kora/config"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/gofiber/fiber"
 )
 
 // InitRoutes - Setup API all routes
-func InitRoutes(app *fiber.App, conn *config.DBConn) {
+func InitRoutes(app *fiber.App, conn *config.DBConn, sess *session.Session) {
 	baseRouter := app.Group("/api/v1")
 
 	NewPostRouter(baseRouter, conn)
@@ -15,4 +16,5 @@ func InitRoutes(app *fiber.App, conn *config.DBConn) {
 	NewCommentRouter(baseRouter, conn)
 	NewUserRouter(baseRouter, conn)
 	NewSpaceRouter(baseRouter, conn)
+	NewImageRouter(baseRouter, conn, sess)
 }
