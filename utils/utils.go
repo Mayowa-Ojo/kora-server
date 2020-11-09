@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/Mayowa-Ojo/kora/constants"
 	"github.com/Mayowa-Ojo/kora/domain"
@@ -155,4 +156,16 @@ func JWTError(ctx *fiber.Ctx, err error) {
 	}
 
 	ctx.Next(constants.ErrInvalidCredentials)
+}
+
+// GenerateSlug - creates a url friendly slug from a string s
+//               [e.g] 'What are generics?' becomes 'what-are-generics'
+func GenerateSlug(s string) string {
+	s = strings.ToLower(s)
+	slice := strings.Split(s, " ")
+
+	s = strings.Join(slice, "-")
+	s = strings.TrimSuffix(s, "?")
+
+	return s
 }
