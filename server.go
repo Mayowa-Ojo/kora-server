@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/Mayowa-Ojo/kora/shorturl"
+
 	"github.com/Mayowa-Ojo/kora/apiv1"
 	"github.com/Mayowa-Ojo/kora/config"
 	"github.com/Mayowa-Ojo/kora/middleware"
@@ -22,7 +24,14 @@ func main() {
 
 	middleware.InitMiddlewares(app)
 
-	apiv1.InitRoutes(app, conn)
+	sess, err := config.InitAwsSession(env)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	apiv1.InitRoutes(app, conn, sess)
+
+	shorturl.InitShortURLService(app)
 
 	app.Use(middleware.NotFoundError)
 
