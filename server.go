@@ -31,7 +31,7 @@ func main() {
 
 	apiv1.InitRoutes(app, conn, sess)
 
-	shorturl.InitShortURLService(app)
+	shorturl.InitShortURLService(app, conn)
 
 	app.Use(middleware.NotFoundError)
 
