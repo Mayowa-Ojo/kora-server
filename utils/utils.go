@@ -163,9 +163,13 @@ func JWTError(ctx *fiber.Ctx, err error) {
 func GenerateSlug(s string) string {
 	s = strings.ToLower(s)
 	slice := strings.Split(s, " ")
+	replacer := strings.NewReplacer(
+		".", "", ",", "", "&", "", "@", "", "#", "", "$", "", "*", "", "+", "",
+	)
 
 	s = strings.Join(slice, "-")
 	s = strings.TrimSuffix(s, "?")
+	s = replacer.Replace(s)
 
 	return s
 }
