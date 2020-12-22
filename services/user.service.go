@@ -59,15 +59,35 @@ func (u *UserService) GetOne(ctx *fiber.Ctx) (*entity.User, error) {
 	return user, nil
 }
 
-// UpdateContentViews - update views count when a post with author field as current user is requested
+// UpdateContentViews - update views count when a post is requested
 func (u *UserService) UpdateContentViews(ctx *fiber.Ctx) error {
+	var filter bson.D
 	postID := ctx.Params("postId")
-	postObjectID, err := primitive.ObjectIDFromHex(postID)
-	if err != nil {
-		return constants.ErrUnprocessableEntity
+	slug := ctx.Query("slug")
+	username := ctx.Query("username")
+
+	if postID != "" {
+		postObjectID, err := primitive.ObjectIDFromHex(postID)
+		if err != nil {
+			return constants.ErrUnprocessableEntity
+		}
+		filter = bson.D{{Key: "_id", Value: postObjectID}}
 	}
 
-	filter := bson.D{{Key: "_id", Value: postObjectID}}
+	if username != "" {
+		filter = bson.D{
+			{Key: "author.username", Value: username},
+			{Key: "post_type", Value: "answer"},
+		}
+	}
+
+	if slug != "" && username == "" {
+		filter = bson.D{
+			{Key: "slug", Value: slug},
+			{Key: "post_type", Value: "question"},
+		}
+	}
+
 	opts := options.FindOne()
 	opts.SetProjection(bson.D{{Key: "author", Value: 1}})
 
@@ -82,6 +102,16 @@ func (u *UserService) UpdateContentViews(ctx *fiber.Ctx) error {
 	_, err = u.userRepo.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return constants.ErrInternalServer
+	}
+
+	if username != "" {
+		filter = bson.D{{Key: "_id", Value: post.ID}}
+		update := bson.D{{Key: "$inc", Value: bson.D{{Key: "views", Value: 1}}}}
+
+		_, err = u.postRepo.UpdateOne(ctx, filter, update)
+		if err != nil {
+			return constants.ErrInternalServer
+		}
 	}
 
 	return nil
