@@ -11,8 +11,8 @@ import (
 type SpaceSettings struct {
 	CanAddQuestionsAndAnwers bool   `json:"canAddQuestionsAndAnwers" bson:"Can_add_questions_and_anwers"`
 	CanAddPosts              bool   `json:"canAddPosts"              bson:"can_add_posts"`
-	CanSubmitQuestions       bool   `json:"anSubmitQuestions"        bson:"can_submit_questions"`
-	CanSubmitAnswers         bool   `json:"anSubmitAnswers"          bson:"can_submit_answers"`
+	CanSubmitQuestions       bool   `json:"canSubmitQuestions"        bson:"can_submit_questions"`
+	CanSubmitAnswers         bool   `json:"canSubmitAnswers"          bson:"can_submit_answers"`
 	CanSubmitPosts           bool   `json:"canSubmitPosts"           bson:"can_submit_posts"`
 	WhoCanComment            string `json:"whoCanComment"            bson:"who_can_comment"`
 	ModeratorsCanInvite      bool   `json:"moderatorsCanInvite"      bson:"moderators_can_invite"`
@@ -26,6 +26,7 @@ type Space struct {
 	ID           primitive.ObjectID   `json:"id,omitempty" bson:"_id,omitempty"`
 	Name         string               `json:"name"         bson:"name"`
 	About        string               `json:"about"        bson:"about"`
+	Slug         string               `json:"slug"         bson:"slug"`
 	Details      string               `json:"details"      bson:"details"`
 	Icon         string               `json:"icon"         bson:"icon"`
 	CoverPhoto   string               `json:"coverPhoto"   bson:"cover_photo"`
@@ -59,4 +60,6 @@ func (s *Space) SetDefaultValues() {
 	s.Contributors = []primitive.ObjectID{}
 	s.Posts = []primitive.ObjectID{}
 	s.Topics = []primitive.ObjectID{}
+	s.Icon = "https://kora-s3-bucket.s3.us-east-2.amazonaws.com/images/default-space-icon.png"
+	s.CoverPhoto = "https://kora-s3-bucket.s3.us-east-2.amazonaws.com/images/default-space-cover.png"
 }
