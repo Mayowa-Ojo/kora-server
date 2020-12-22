@@ -15,20 +15,21 @@ type Post struct {
 	ContentTruncated string               `json:"contentTruncated,omitempty" bson:"content_truncated"`
 	ContextLink      string               `json:"contextLink,omitempty"      bson:"context_link"`
 	Slug             string               `json:"slug,omitempty"             bson:"slug"`
+	PostType         string               `json:"postType,omitempty"         bson:"post_type"`
 	Upvotes          int                  `json:"upvotes"                    bson:"upvotes"`
 	Downvotes        int                  `json:"downvotes"                  bson:"downvotes"`
 	Shares           int                  `json:"shares"                     bson:"shares"`
+	Views            int                  `json:"views"                      bson:"views"`
 	ShareLink        string               `json:"shareLink"                  bson:"share_link"`
 	SharedBy         []primitive.ObjectID `json:"-"                          bson:"shared_by"`
 	UpvotedBy        []primitive.ObjectID `json:"-"                          bson:"upvoted_by"`
 	DownvotedBy      []primitive.ObjectID `json:"-"                          bson:"downvoted_by"`
-	PostType         string               `json:"postType,omitempty"         bson:"post_type"`
-	Topics           []primitive.ObjectID `json:"topics,omitempty"           bson:"topics"`
-	Followers        []primitive.ObjectID `json:"-"                          bson:"followers"`
+	Topics           []primitive.ObjectID `json:"topics,"                    bson:"topics"`
+	Followers        []primitive.ObjectID `json:"followers"                  bson:"followers"`
 	Author           *User                `json:"author,omitempty"           bson:"author"`
-	Answers          []primitive.ObjectID `json:"-"                          bson:"answers"`
-	ResponseTo       primitive.ObjectID   `json:"-"                          bson:"response_to"`
-	Comments         []primitive.ObjectID `json:"-"                          bson:"comments"`
+	Answers          []primitive.ObjectID `json:"answers"                    bson:"answers"`
+	ResponseTo       primitive.ObjectID   `json:"responseTo"                 bson:"response_to"`
+	Comments         []primitive.ObjectID `json:"comments"                   bson:"comments"`
 	CreatedAt        time.Time            `json:"createdAt"                  bson:"created_at"`
 	UpdatedAt        time.Time            `json:"updatedAt"                  bson:"updated_at"`
 	DeletedAt        time.Time            `json:"deletedAt"                  bson:"deleted_at"`
