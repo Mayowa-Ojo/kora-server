@@ -30,7 +30,7 @@ func (p *PostController) GetAll(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", posts)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", posts)
 }
 
 // GetOne - fetch post with matching query [e.g id] from DB collection
@@ -50,7 +50,27 @@ func (p *PostController) GetOne(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", post)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", post)
+}
+
+// GetBySlug - fetch post with matching query [e.g id] from DB collection
+func (p *PostController) GetBySlug(ctx *fiber.Ctx) {
+	post, err := p.postService.GetBySlug(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	err = p.userService.UpdateContentViews(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", post)
 }
 
 // Create - create new post and save to DB collection
@@ -63,7 +83,7 @@ func (p *PostController) Create(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource created", post)
+	r.JSONResponse(ctx, true, fiber.StatusCreated, "[INFO]: Resource created", post)
 }
 
 // DeleteOne - create new post and save to DB collection
@@ -88,7 +108,20 @@ func (p *PostController) GetFeedForUser(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", posts)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", posts)
+}
+
+// GetQuestionsForUser -
+func (p *PostController) GetQuestionsForUser(ctx *fiber.Ctx) {
+	posts, err := p.postService.GetQuestionsForUser(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", posts)
 }
 
 // UpvotePostByUser -
@@ -137,4 +170,17 @@ func (p *PostController) UnfollowPost(ctx *fiber.Ctx) {
 
 	r := utils.NewResponse()
 	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", nil)
+}
+
+// SharePost - create a shared post
+func (p *PostController) SharePost(ctx *fiber.Ctx) {
+	sharedPost, err := p.postService.CreateSharedPost(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusCreated, "[INFO]: Resource created", sharedPost)
 }
