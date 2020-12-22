@@ -3,6 +3,7 @@ package services
 import (
 	"time"
 
+	"github.com/Mayowa-Ojo/kora/config"
 	"github.com/Mayowa-Ojo/kora/constants"
 
 	"github.com/Mayowa-Ojo/kora/domain"
@@ -14,6 +15,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	mg "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+)
+
+var (
+	env = config.NewEnvConfig()
 )
 
 // Auth -
@@ -60,7 +65,7 @@ func (a Auth) Login(ctx *fiber.Ctx) (types.GenericMap, error) {
 	claims["username"] = user.Username
 	claims["exp"] = time.Now().Add(time.Hour * 168).Unix()
 
-	t, err := token.SignedString([]byte("jwt-secret"))
+	t, err := token.SignedString([]byte(env.JwtSecret))
 	if err != nil {
 		return nil, constants.ErrInternalServer
 	}
@@ -126,6 +131,8 @@ func (a Auth) Signup(ctx *fiber.Ctx) (types.GenericMap, error) {
 		return nil, constants.ErrInvalidCredentials
 	}
 
+	instance.SetDefaultValues()
+
 	insertResult, err := a.userRepo.Create(ctx, instance)
 	if err != nil {
 		return nil, constants.ErrInternalServer
@@ -144,7 +151,7 @@ func (a Auth) Signup(ctx *fiber.Ctx) (types.GenericMap, error) {
 	claims["username"] = user.Username
 	claims["exp"] = time.Now().Add(time.Hour * 168).Unix()
 
-	t, err := token.SignedString([]byte("jwt secret"))
+	t, err := token.SignedString([]byte(env.JwtSecret))
 	if err != nil {
 		return nil, constants.ErrInternalServer
 	}
