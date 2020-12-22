@@ -3,7 +3,6 @@ package services
 import (
 	"strings"
 
-	"github.com/Mayowa-Ojo/kora/config"
 	"github.com/Mayowa-Ojo/kora/constants"
 	"github.com/Mayowa-Ojo/kora/domain"
 	"github.com/Mayowa-Ojo/kora/types"
@@ -13,9 +12,9 @@ import (
 	"github.com/gofiber/fiber"
 )
 
-var (
-	env = config.NewEnvConfig()
-)
+// var (
+// 	env = config.NewEnvConfig() [env declared in auth.service]
+// )
 
 // ImageService -
 type ImageService struct {
