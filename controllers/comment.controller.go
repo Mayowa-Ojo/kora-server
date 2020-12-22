@@ -28,7 +28,7 @@ func (c *CommentController) GetAll(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", comments)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", comments)
 }
 
 // GetOne - fetch comment with matching query [e.g id] from DB collection
@@ -41,7 +41,7 @@ func (c *CommentController) GetOne(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", comment)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", comment)
 }
 
 // Create - create new comment and save to DB collection
@@ -54,5 +54,18 @@ func (c *CommentController) Create(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource created", comment)
+	r.JSONResponse(ctx, true, fiber.StatusCreated, "[INFO]: Resource created", comment)
+}
+
+// GetCommentsForPost -
+func (c *CommentController) GetCommentsForPost(ctx *fiber.Ctx) {
+	comments, err := c.commentService.GetCommentsForPost(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", comments)
 }
