@@ -65,6 +65,25 @@ func (s *SpaceService) GetOne(ctx *fiber.Ctx) (*entity.Space, error) {
 	return space, nil
 }
 
+// GetBySlug -
+func (s *SpaceService) GetBySlug(ctx *fiber.Ctx) (*entity.Space, error) {
+	slug := ctx.Query("q")
+
+	filter := bson.D{{Key: "slug", Value: slug}}
+	opts := options.FindOne()
+
+	space, err := s.spaceRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, constants.ErrNotFound
+		}
+
+		return nil, constants.ErrInternalServer
+	}
+
+	return space, nil
+}
+
 // Create -
 func (s *SpaceService) Create(ctx *fiber.Ctx) (*entity.Space, error) {
 	var requestBody struct {
@@ -77,14 +96,19 @@ func (s *SpaceService) Create(ctx *fiber.Ctx) (*entity.Space, error) {
 		return nil, constants.ErrUnprocessableEntity
 	}
 
+	slug := utils.GenerateSlug(requestBody.Name)
+
 	instance := &entity.Space{
 		Name:  requestBody.Name,
 		About: requestBody.About,
+		Slug:  slug,
 	}
 
 	if err := instance.Validate(); err != nil {
 		return nil, constants.ErrUnprocessableEntity
 	}
+
+	instance.SetDefaultValues()
 
 	insertResult, err := s.spaceRepo.Create(ctx, instance)
 	if err != nil {
