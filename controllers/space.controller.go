@@ -28,7 +28,7 @@ func (s *SpaceController) GetAll(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", spaces)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", spaces)
 }
 
 // GetOne - fetch space with matching query [e.g id] from DB collection
@@ -41,7 +41,20 @@ func (s *SpaceController) GetOne(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", space)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", space)
+}
+
+// GetBySlug - fetch space with matching slug from DB collection
+func (s *SpaceController) GetBySlug(ctx *fiber.Ctx) {
+	space, err := s.spaceService.GetBySlug(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", space)
 }
 
 // Create - create new space and save to DB collection
