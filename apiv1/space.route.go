@@ -24,6 +24,7 @@ func NewSpaceRouter(br fiber.Router, conn *config.DBConn) {
 	spaceService := services.NewSpaceService(spaceRepo, postRepo, userRepo)
 	spaceController := controllers.NewSpaceController(spaceService)
 
+	router.Get("/slug", spaceController.GetBySlug)
 	router.Get("/:id", spaceController.GetOne)
 	router.Get("/", spaceController.GetAll)
 	router.Post("/", spaceController.Create)

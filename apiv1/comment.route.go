@@ -21,7 +21,8 @@ func NewCommentRouter(br fiber.Router, conn *config.DBConn) {
 	router := br.Group("/comments")
 	commentRepo := repository.NewCommentRepository(conn)
 	userRepo := repository.NewUserRepository(conn)
-	commentService := services.NewCommentService(commentRepo, userRepo)
+	postRepo := repository.NewPostRepository(conn)
+	commentService := services.NewCommentService(commentRepo, userRepo, postRepo)
 	commentController := controllers.NewCommentController(commentService)
 
 	router.Get("/:id", commentController.GetOne)
