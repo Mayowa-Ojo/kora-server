@@ -68,7 +68,7 @@ func (c *CommentRepository) Create(ctx *fiber.Ctx, comment *entity.Comment) (*mo
 
 // GetMany -
 func (c *CommentRepository) GetMany(ctx *fiber.Ctx, filter types.Any, opts *options.FindOptions) ([]entity.Comment, error) {
-	col := c.DB.Collection("comment")
+	col := c.DB.Collection("comments")
 	comments := make([]entity.Comment, 0)
 
 	cur, err := col.Find(ctx.Fasthttp, filter, opts)
