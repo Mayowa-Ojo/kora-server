@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	mg "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -16,18 +17,72 @@ import (
 type CommentService struct {
 	commentRepo domain.CommentRepository
 	userRepo    domain.UserRepository
+	postRepo    domain.PostRepository
 }
 
 // NewCommentService -
-func NewCommentService(c domain.CommentRepository, u domain.UserRepository) domain.CommentService {
+func NewCommentService(c domain.CommentRepository, u domain.UserRepository, p domain.PostRepository) domain.CommentService {
 	return &CommentService{
 		c,
 		u,
+		p,
 	}
 }
 
 // GetAll -
 func (c *CommentService) GetAll(ctx *fiber.Ctx) ([]entity.Comment, error) {
+	postID := ctx.Query("postId")
+	slug := ctx.Query("slug") // option to fetch comments through post slug
+
+	if postID != "" {
+		postObjectID, err := primitive.ObjectIDFromHex(postID)
+
+		filter := bson.D{{Key: "response_to", Value: postObjectID}}
+		opts := options.Find()
+
+		comments, err := c.commentRepo.GetMany(ctx, filter, opts)
+		if err != nil {
+			if err == mg.ErrNoDocuments {
+				return nil, constants.ErrNotFound
+			}
+
+			return nil, constants.ErrInternalServer
+		}
+
+		return comments, nil
+	}
+
+	if slug != "" {
+		filter := bson.D{
+			{Key: "slug", Value: slug},
+			{Key: "post_type", Value: "answer"},
+		}
+		opts := options.FindOne()
+
+		post, err := c.postRepo.GetOne(ctx, filter, opts)
+		if err != nil {
+			if err == mg.ErrNoDocuments {
+				return nil, constants.ErrNotFound
+			}
+
+			return nil, constants.ErrInternalServer
+		}
+
+		filter = bson.D{{Key: "response_to", Value: post.ID}}
+		findOpts := options.Find()
+
+		comments, err := c.commentRepo.GetMany(ctx, filter, findOpts)
+		if err != nil {
+			if err == mg.ErrNoDocuments {
+				return nil, constants.ErrNotFound
+			}
+
+			return nil, constants.ErrInternalServer
+		}
+
+		return comments, nil
+	}
+
 	result, err := c.commentRepo.GetAll(ctx)
 
 	if err != nil {
@@ -84,7 +139,7 @@ func (c *CommentService) Create(ctx *fiber.Ctx) (*entity.Comment, error) {
 
 	filter := bson.D{{Key: "_id", Value: userObjectID}}
 	opts := options.FindOne()
-	opts.SetProjection(bson.D{{}})
+
 	user, err := c.userRepo.GetOne(ctx, filter, opts)
 	if err != nil {
 		return nil, constants.ErrInternalServer
@@ -108,4 +163,24 @@ func (c *CommentService) Create(ctx *fiber.Ctx) (*entity.Comment, error) {
 	}
 
 	return comment, nil
+}
+
+// GetCommentsForPost - get comments for a post that matches given query
+func (c *CommentService) GetCommentsForPost(ctx *fiber.Ctx) ([]entity.Comment, error) {
+	postID := ctx.Params("id")
+	postObjectID, err := primitive.ObjectIDFromHex(postID)
+
+	filter := bson.D{{Key: "response_to", Value: postObjectID}}
+	opts := options.Find()
+
+	comments, err := c.commentRepo.GetMany(ctx, filter, opts)
+	if err != nil {
+		if err == mg.ErrNoDocuments {
+			return nil, constants.ErrNotFound
+		}
+
+		return nil, constants.ErrInternalServer
+	}
+
+	return comments, nil
 }
