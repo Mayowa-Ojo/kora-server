@@ -62,4 +62,5 @@ func (u *User) SetDefaultValues() {
 	u.Posts = []primitive.ObjectID{}
 	u.Spaces = []primitive.ObjectID{}
 	u.Knowledge = []Topic{}
+	u.Avatar = "https://kora-s3-bucket.s3.us-east-2.amazonaws.com/images/default-user-avatar.png"
 }
