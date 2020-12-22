@@ -28,7 +28,7 @@ func (u *UserController) GetAll(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", users)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", users)
 }
 
 // GetOne - fetch user with matching query [e.g id] from DB collection
@@ -41,7 +41,7 @@ func (u *UserController) GetOne(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", user)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", user)
 }
 
 // UpdateProfile -
@@ -67,7 +67,7 @@ func (u *UserController) GetFollowersForUser(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", followers)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", followers)
 }
 
 // GetFollowingForUser -
@@ -80,7 +80,7 @@ func (u *UserController) GetFollowingForUser(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", following)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", following)
 }
 
 // GetPostsForUser -
@@ -93,7 +93,7 @@ func (u *UserController) GetPostsForUser(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", posts)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", posts)
 }
 
 // GetKnowledgeForUser -
@@ -106,7 +106,7 @@ func (u *UserController) GetKnowledgeForUser(ctx *fiber.Ctx) {
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", knowledge)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", knowledge)
 }
 
 // FollowUser -
