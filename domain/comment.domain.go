@@ -13,6 +13,7 @@ type CommentService interface {
 	GetAll(ctx *fiber.Ctx) ([]entity.Comment, error)
 	GetOne(ctx *fiber.Ctx) (*entity.Comment, error)
 	Create(ctx *fiber.Ctx) (*entity.Comment, error)
+	GetCommentsForPost(ctx *fiber.Ctx) ([]entity.Comment, error)
 }
 
 // CommentRepository -

@@ -12,6 +12,7 @@ import (
 type SpaceService interface {
 	GetAll(ctx *fiber.Ctx) ([]entity.Space, error)
 	GetOne(ctx *fiber.Ctx) (*entity.Space, error)
+	GetBySlug(ctx *fiber.Ctx) (*entity.Space, error)
 	Create(ctx *fiber.Ctx) (*entity.Space, error)
 	GetPostsForSpace(ctx *fiber.Ctx) ([]entity.Post, error)
 	GetMembersForSpace(ctx *fiber.Ctx) (types.GenericMap, error)
