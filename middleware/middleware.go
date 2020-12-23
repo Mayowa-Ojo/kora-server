@@ -17,7 +17,7 @@ func InitMiddlewares(app *fiber.App) {
 	}))
 
 	app.Use(middleware.Logger(middleware.LoggerConfig{
-		Format:     "${time} ${method} ${path}",
+		Format:     "[${time}] ${status} - ${latency} ${method} ${path}\n",
 		TimeFormat: "15:04:05",
 		TimeZone:   "Local",
 		Output:     os.Stdout,
