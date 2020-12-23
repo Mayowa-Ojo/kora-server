@@ -22,17 +22,19 @@ type PostService struct {
 	userRepo       domain.UserRepository
 	sharedPostRepo domain.SharedPostRepository
 	commentRepo    domain.CommentRepository
+	spaceRepo      domain.SpaceRepository
 }
 
 // NewPostService - creates a new post service instance
 func NewPostService(
-	p domain.PostRepository, u domain.UserRepository, s domain.SharedPostRepository, c domain.CommentRepository,
+	p domain.PostRepository, u domain.UserRepository, s domain.SharedPostRepository, c domain.CommentRepository, sp domain.SpaceRepository,
 ) domain.PostService {
 	return &PostService{
 		p,
 		u,
 		s,
 		c,
+		sp,
 	}
 }
 
@@ -128,6 +130,8 @@ func (p PostService) Create(ctx *fiber.Ctx) (*entity.Post, error) {
 		PostType         string `json:"postType"`
 	}
 
+	spaceID := ctx.Query("spaceId")
+
 	err := ctx.BodyParser(&requestBody)
 	if err != nil {
 		return nil, constants.ErrUnprocessableEntity
@@ -199,6 +203,23 @@ func (p PostService) Create(ctx *fiber.Ctx) (*entity.Post, error) {
 	post, err := p.postRepo.GetOne(ctx, filter, opts)
 	if err != nil {
 		return nil, constants.ErrInternalServer
+	}
+
+	if spaceID != "" {
+		spaceObjectID, err := primitive.ObjectIDFromHex(spaceID)
+		if err != nil {
+			return nil, constants.ErrInternalServer
+		}
+
+		filter := bson.D{{Key: "_id", Value: spaceObjectID}}
+		update := bson.D{
+			{Key: "$push", Value: bson.D{{Key: "posts", Value: post.ID}}},
+		}
+
+		_, err = p.spaceRepo.UpdateOne(ctx, filter, update)
+		if err != nil {
+			return nil, constants.ErrInternalServer
+		}
 	}
 
 	return post, nil
