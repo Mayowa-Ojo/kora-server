@@ -22,7 +22,8 @@ func NewPostRouter(br fiber.Router, conn *config.DBConn) {
 	userRepo := repository.NewUserRepository(conn)
 	topicRepo := repository.NewTopicRepository(conn)
 	commentRepo := repository.NewCommentRepository(conn)
-	postService := services.NewPostService(postRepo, userRepo, sharedPostRepo, commentRepo)
+	spaceRepo := repository.NewSpaceRepository(conn)
+	postService := services.NewPostService(postRepo, userRepo, sharedPostRepo, commentRepo, spaceRepo)
 	userService := services.NewUserService(userRepo, postRepo, topicRepo)
 	controller := controllers.NewPostController(postService, userService)
 
