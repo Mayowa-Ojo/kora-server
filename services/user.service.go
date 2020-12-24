@@ -78,6 +78,7 @@ func (u *UserService) UpdateContentViews(ctx *fiber.Ctx) error {
 		filter = bson.D{
 			{Key: "author.username", Value: username},
 			{Key: "post_type", Value: "answer"},
+			{Key: "slug", Value: slug},
 		}
 	}
 
@@ -105,7 +106,7 @@ func (u *UserService) UpdateContentViews(ctx *fiber.Ctx) error {
 	}
 
 	if username != "" {
-		filter = bson.D{{Key: "_id", Value: post.ID}}
+		filter := bson.D{{Key: "_id", Value: post.ID}}
 		update := bson.D{{Key: "$inc", Value: bson.D{{Key: "views", Value: 1}}}}
 
 		_, err = u.postRepo.UpdateOne(ctx, filter, update)
