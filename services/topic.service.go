@@ -4,6 +4,7 @@ import (
 	"github.com/Mayowa-Ojo/kora/constants"
 	"github.com/Mayowa-Ojo/kora/domain"
 	"github.com/Mayowa-Ojo/kora/entity"
+	"github.com/Mayowa-Ojo/kora/utils"
 	"github.com/gofiber/fiber"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -13,12 +14,16 @@ import (
 // TopicService -
 type TopicService struct {
 	topicRepo domain.TopicRepository
+	postRepo  domain.PostRepository
+	userRepo  domain.UserRepository
 }
 
 // NewTopicService -
-func NewTopicService(t domain.TopicRepository) domain.TopicService {
+func NewTopicService(t domain.TopicRepository, p domain.PostRepository, u domain.UserRepository) domain.TopicService {
 	return &TopicService{
 		t,
+		p,
+		u,
 	}
 }
 
@@ -70,6 +75,8 @@ func (t *TopicService) Create(ctx *fiber.Ctx) (*entity.Topic, error) {
 		return nil, constants.ErrUnprocessableEntity
 	}
 
+	instance.SetDefaultValues()
+
 	insertResult, err := t.topicRepo.Create(ctx, instance)
 	if err != nil {
 		return nil, constants.ErrInternalServer
@@ -82,4 +89,50 @@ func (t *TopicService) Create(ctx *fiber.Ctx) (*entity.Topic, error) {
 	}
 
 	return topic, nil
+}
+
+// FollowTopic -
+func (t *TopicService) FollowTopic(ctx *fiber.Ctx) error {
+	topicID := ctx.Params("id")
+	topicObjectID, err := primitive.ObjectIDFromHex(topicID)
+	if err != nil {
+		return constants.ErrUnprocessableEntity
+	}
+
+	user, err := utils.GetUserFromAuthHeader(ctx, t.userRepo)
+	if err != nil {
+		return constants.ErrUnauthorized
+	}
+
+	filter := bson.D{{Key: "_id", Value: topicObjectID}}
+	update := bson.D{{Key: "$addToSet", Value: bson.D{{Key: "followers", Value: user.ID}}}}
+
+	if _, err := t.topicRepo.UpdateOne(ctx, filter, update); err != nil {
+		return constants.ErrInternalServer
+	}
+
+	return nil
+}
+
+// UnfollowTopic -
+func (t *TopicService) UnfollowTopic(ctx *fiber.Ctx) error {
+	topicID := ctx.Params("id")
+	topicObjectID, err := primitive.ObjectIDFromHex(topicID)
+	if err != nil {
+		return constants.ErrUnprocessableEntity
+	}
+
+	user, err := utils.GetUserFromAuthHeader(ctx, t.userRepo)
+	if err != nil {
+		return constants.ErrUnauthorized
+	}
+
+	filter := bson.D{{Key: "_id", Value: topicObjectID}}
+	update := bson.D{{Key: "$pull", Value: bson.D{{Key: "followers", Value: user.ID}}}}
+
+	if _, err := t.topicRepo.UpdateOne(ctx, filter, update); err != nil {
+		return constants.ErrInternalServer
+	}
+
+	return nil
 }

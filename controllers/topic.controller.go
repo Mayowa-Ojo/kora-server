@@ -56,3 +56,29 @@ func (t *TopicController) Create(ctx *fiber.Ctx) {
 	r := utils.NewResponse()
 	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource created", topic)
 }
+
+// FollowTopic - create new topic and save to DB collection
+func (t *TopicController) FollowTopic(ctx *fiber.Ctx) {
+	err := t.topicService.FollowTopic(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", nil)
+}
+
+// UnfollowTopic - create new topic and save to DB collection
+func (t *TopicController) UnfollowTopic(ctx *fiber.Ctx) {
+	err := t.topicService.UnfollowTopic(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", nil)
+}
