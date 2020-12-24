@@ -342,6 +342,25 @@ func (p PostService) GetQuestionsForUser(ctx *fiber.Ctx) ([]entity.Post, error) 
 	return posts, nil
 }
 
+// GetAnswersForQuestion - fetch answers for post with given id
+func (p PostService) GetAnswersForQuestion(ctx *fiber.Ctx) ([]entity.Post, error) {
+	questionID := ctx.Params("id")
+	questionObjectID, err := primitive.ObjectIDFromHex(questionID)
+	if err != nil {
+		return nil, constants.ErrUnprocessableEntity
+	}
+
+	filter := bson.D{{Key: "response_to", Value: questionObjectID}}
+	opts := options.Find()
+	posts, err := p.postRepo.GetMany(ctx, filter, opts)
+
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return posts, nil
+}
+
 // UpvotePostByUser - upvote a post and add the current user to upvotedBy list
 func (p PostService) UpvotePostByUser(ctx *fiber.Ctx) error {
 	postID := ctx.Params("postId")
