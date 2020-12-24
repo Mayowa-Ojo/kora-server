@@ -13,6 +13,8 @@ type TopicService interface {
 	GetAll(ctx *fiber.Ctx) ([]entity.Topic, error)
 	GetOne(ctx *fiber.Ctx) (*entity.Topic, error)
 	Create(ctx *fiber.Ctx) (*entity.Topic, error)
+	FollowTopic(ctx *fiber.Ctx) error
+	UnfollowTopic(ctx *fiber.Ctx) error
 }
 
 // TopicRepository -

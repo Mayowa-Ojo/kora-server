@@ -23,7 +23,8 @@ type PostService interface {
 	DownvotePostByUser(ctx *fiber.Ctx) error
 	FollowPost(ctx *fiber.Ctx) error
 	UnfollowPost(ctx *fiber.Ctx) error
-	AddTopicToPost(ctx *fiber.Ctx) (*entity.Post, error)
+	AddTopicsToPost(ctx *fiber.Ctx) ([]entity.Topic, error)
+	GetTopicsForPost(ctx *fiber.Ctx) ([]entity.Topic, error)
 }
 
 // PostRepository -
