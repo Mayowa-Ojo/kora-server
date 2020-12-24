@@ -197,3 +197,29 @@ func (p *PostController) SharePost(ctx *fiber.Ctx) {
 	r := utils.NewResponse()
 	r.JSONResponse(ctx, true, fiber.StatusCreated, "[INFO]: Resource created", sharedPost)
 }
+
+// AddTopicsToPost - add topics to post that matches given id
+func (p *PostController) AddTopicsToPost(ctx *fiber.Ctx) {
+	topics, err := p.postService.AddTopicsToPost(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusCreated, "[INFO]: Resource created", topics)
+}
+
+// GetTopicsForPost - find topics from post that matches given id
+func (p *PostController) GetTopicsForPost(ctx *fiber.Ctx) {
+	topics, err := p.postService.GetTopicsForPost(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", topics)
+}
