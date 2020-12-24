@@ -12,6 +12,7 @@ import (
 	"github.com/gofiber/fiber"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	mg "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -23,11 +24,17 @@ type PostService struct {
 	sharedPostRepo domain.SharedPostRepository
 	commentRepo    domain.CommentRepository
 	spaceRepo      domain.SpaceRepository
+	topicRepo      domain.TopicRepository
 }
 
 // NewPostService - creates a new post service instance
 func NewPostService(
-	p domain.PostRepository, u domain.UserRepository, s domain.SharedPostRepository, c domain.CommentRepository, sp domain.SpaceRepository,
+	p domain.PostRepository,
+	u domain.UserRepository,
+	s domain.SharedPostRepository,
+	c domain.CommentRepository,
+	sp domain.SpaceRepository,
+	t domain.TopicRepository,
 ) domain.PostService {
 	return &PostService{
 		p,
@@ -35,6 +42,7 @@ func NewPostService(
 		s,
 		c,
 		sp,
+		t,
 	}
 }
 
@@ -467,51 +475,96 @@ func (p PostService) UnfollowPost(ctx *fiber.Ctx) error {
 	return nil
 }
 
-// AddTopicToPost - add a new topic to list of topics
-func (p PostService) AddTopicToPost(ctx *fiber.Ctx) (*entity.Post, error) {
+// AddTopicsToPost - add a new topic to list of topics
+func (p PostService) AddTopicsToPost(ctx *fiber.Ctx) ([]entity.Topic, error) {
 	var requestBody struct {
 		Topics []string `json:"topics"`
 	}
 
-	if err := ctx.BodyParser(&requestBody); err != nil {
+	err := ctx.BodyParser(&requestBody)
+	if err != nil {
 		return nil, constants.ErrUnprocessableEntity
 	}
 
-	topicsObjectID := []primitive.ObjectID{}
-	for _, v := range requestBody.Topics {
-		objectID, err := primitive.ObjectIDFromHex(v)
-		if err != nil {
-			return nil, constants.ErrUnprocessableEntity
-		}
-		topicsObjectID = append(topicsObjectID, objectID)
+	postID := ctx.Params("id")
+	postObjectID, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		return nil, constants.ErrUnprocessableEntity
 	}
 
-	postID := ctx.Params("postId")
+	for _, v := range requestBody.Topics {
+		filter := bson.D{{Key: "name", Value: v}}
+		_, err := p.topicRepo.GetOne(ctx, filter)
+
+		if err != nil && err != mongo.ErrNoDocuments {
+			return nil, constants.ErrInternalServer
+		}
+
+		if err == mongo.ErrNoDocuments {
+			// create topic
+			instance := &entity.Topic{
+				Name: v,
+			}
+
+			if err := instance.Validate(); err != nil {
+				return nil, constants.ErrUnprocessableEntity
+			}
+
+			instance.SetDefaultValues()
+
+			_, err := p.topicRepo.Create(ctx, instance)
+			if err != nil {
+				return nil, constants.ErrInternalServer
+			}
+		}
+	}
+
+	filter := bson.D{{Key: "name", Value: bson.D{{Key: "$in", Value: requestBody.Topics}}}}
+	opts := options.Find()
+
+	topics, err := p.topicRepo.GetMany(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	var topicIDs []primitive.ObjectID
+	for _, v := range topics {
+		topicIDs = append(topicIDs, v.ID)
+	}
+
+	filter = bson.D{{Key: "_id", Value: postObjectID}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "topics", Value: topicIDs}}}}
+
+	if _, err := p.postRepo.UpdateOne(ctx, filter, update); err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return topics, nil
+}
+
+// GetTopicsForPost -
+func (p PostService) GetTopicsForPost(ctx *fiber.Ctx) ([]entity.Topic, error) {
+	postID := ctx.Params("id")
 	postObjectID, err := primitive.ObjectIDFromHex(postID)
 	if err != nil {
 		return nil, constants.ErrUnprocessableEntity
 	}
 
 	filter := bson.D{{Key: "_id", Value: postObjectID}}
-	update := bson.D{{
-		Key: "$push",
-		Value: bson.D{{
-			Key:   "topics",
-			Value: bson.D{{Key: "$each", Value: topicsObjectID}},
-		}},
-	}}
-
-	result, err := p.postRepo.UpdateOne(ctx, filter, update)
-	if err != nil {
-		return nil, constants.ErrInternalServer
-	}
-
-	filter = bson.D{{Key: "_id", Value: result.UpsertedID}}
 	opts := options.FindOne()
+
 	post, err := p.postRepo.GetOne(ctx, filter, opts)
 	if err != nil {
 		return nil, constants.ErrInternalServer
 	}
 
-	return post, nil
+	filter = bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: post.Topics}}}}
+	findOpts := options.Find()
+
+	topics, err := p.topicRepo.GetMany(ctx, filter, findOpts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return topics, nil
 }
