@@ -124,6 +124,19 @@ func (p *PostController) GetQuestionsForUser(ctx *fiber.Ctx) {
 	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", posts)
 }
 
+// GetAnswersForQuestion -
+func (p *PostController) GetAnswersForQuestion(ctx *fiber.Ctx) {
+	posts, err := p.postService.GetAnswersForQuestion(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", posts)
+}
+
 // UpvotePostByUser -
 func (p *PostController) UpvotePostByUser(ctx *fiber.Ctx) {
 	if err := p.postService.UpvotePostByUser(ctx); err != nil {
