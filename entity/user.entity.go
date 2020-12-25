@@ -22,15 +22,15 @@ type User struct {
 	Credential string               `json:"credential,omitempty"   bson:"credential"`
 	Avatar     string               `json:"avatar,omitempty"       bson:"avatar"`
 	Views      int                  `json:"views"                  bson:"views"`
-	Shares     []primitive.ObjectID `json:"-"                      bson:"shares"`
+	Shares     []primitive.ObjectID `json:"shares"                 bson:"shares"`
 	Upvotes    int                  `json:"upvotes"                bson:"upvotes"`
 	Downvotes  int                  `json:"downvotes"              bson:"downvotes"`
-	Followers  []primitive.ObjectID `json:"-"                      bson:"followers"`
-	Following  []primitive.ObjectID `json:"-"                      bson:"following"`
-	Answers    []primitive.ObjectID `json:"-"                      bson:"answers"`
-	Questions  []primitive.ObjectID `json:"-"                      bson:"questions"`
-	Posts      []primitive.ObjectID `json:"-"                      bson:"posts"`
-	Knowledge  []Topic              `json:"knowledge,omitempty"    bson:"knowledge"`
+	Followers  []primitive.ObjectID `json:"followers"              bson:"followers"`
+	Following  []primitive.ObjectID `json:"following"              bson:"following"`
+	Answers    []primitive.ObjectID `json:"answers"                bson:"answers"`
+	Questions  []primitive.ObjectID `json:"questions"              bson:"questions"`
+	Posts      []primitive.ObjectID `json:"posts"                  bson:"posts"`
+	Knowledge  []primitive.ObjectID `json:"knowledge,omitempty"    bson:"knowledge"`
 	Spaces     []primitive.ObjectID `json:"spaces,omitempty"       bson:"spaces"`
 	PinnedPost primitive.ObjectID   `json:"pinnedPost,omitempty"   bson:"pinned_post"`
 	CreatedAt  time.Time            `json:"createdAt"              bson:"created_at"`
@@ -61,6 +61,7 @@ func (u *User) SetDefaultValues() {
 	u.Questions = []primitive.ObjectID{}
 	u.Posts = []primitive.ObjectID{}
 	u.Spaces = []primitive.ObjectID{}
-	u.Knowledge = []Topic{}
+	u.Knowledge = []primitive.ObjectID{}
+	u.Shares = []primitive.ObjectID{}
 	u.Avatar = "https://kora-s3-bucket.s3.us-east-2.amazonaws.com/images/default-user-avatar.png"
 }
