@@ -25,8 +25,9 @@ func NewUserRouter(br fiber.Router, conn *config.DBConn) {
 	userService := services.NewUserService(userRepo, postRepo, topicRepo)
 	userController := controllers.NewUserController(userService)
 
-	router.Get("/:id", userController.GetOne)
 	router.Get("/", userController.GetAll)
+	router.Get("/username", middleware.AuthorizeRoute(), userController.GetUserProfile)
+	router.Get("/:id", userController.GetOne)
 	router.Patch("/:id", middleware.AuthorizeRoute(), userController.UpdateProfile)
 	router.Get("/followers", middleware.AuthorizeRoute(), userController.GetFollowersForUser)
 	router.Get("/following", middleware.AuthorizeRoute(), userController.GetFollowingForUser)

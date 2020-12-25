@@ -19,7 +19,9 @@ type TopicRouter struct {
 func NewTopicRouter(br fiber.Router, conn *config.DBConn) {
 	router := br.Group("/topics")
 	topicRepo := repository.NewTopicRepository(conn)
-	topicService := services.NewTopicService(topicRepo)
+	postRepo := repository.NewPostRepository(conn)
+	userRepo := repository.NewUserRepository(conn)
+	topicService := services.NewTopicService(topicRepo, postRepo, userRepo)
 	topicController := controllers.NewTopicController(topicService)
 
 	router.Get("/:id", topicController.GetOne)

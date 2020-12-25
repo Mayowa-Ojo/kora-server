@@ -23,7 +23,7 @@ func NewPostRouter(br fiber.Router, conn *config.DBConn) {
 	topicRepo := repository.NewTopicRepository(conn)
 	commentRepo := repository.NewCommentRepository(conn)
 	spaceRepo := repository.NewSpaceRepository(conn)
-	postService := services.NewPostService(postRepo, userRepo, sharedPostRepo, commentRepo, spaceRepo)
+	postService := services.NewPostService(postRepo, userRepo, sharedPostRepo, commentRepo, spaceRepo, topicRepo)
 	userService := services.NewUserService(userRepo, postRepo, topicRepo)
 	controller := controllers.NewPostController(postService, userService)
 
@@ -35,6 +35,9 @@ func NewPostRouter(br fiber.Router, conn *config.DBConn) {
 	router.Patch("/follow", middleware.AuthorizeRoute(), controller.FollowPost)
 	router.Patch("/unfollow", middleware.AuthorizeRoute(), controller.UnfollowPost)
 	router.Post("/:id/share", middleware.AuthorizeRoute(), controller.SharePost)
+	router.Post("/:id/topics", middleware.AuthorizeRoute(), controller.AddTopicsToPost)
+	router.Get("/:id/topics", middleware.AuthorizeRoute(), controller.GetTopicsForPost)
+	router.Get("/:id/answers", middleware.AuthorizeRoute(), controller.GetAnswersForQuestion)
 	router.Get("/:id", controller.GetOne)
 	router.Get("/", controller.GetAll)
 	router.Post("/", middleware.AuthorizeRoute(), controller.Create)
