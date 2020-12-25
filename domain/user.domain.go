@@ -12,6 +12,7 @@ import (
 type UserService interface {
 	GetAll(ctx *fiber.Ctx) ([]entity.User, error)
 	GetOne(ctx *fiber.Ctx) (*entity.User, error)
+	GetUserProfile(ctx *fiber.Ctx) (*entity.User, error)
 	UpdateContentViews(ctx *fiber.Ctx) error
 	UpdateProfile(ctx *fiber.Ctx) (*entity.User, error)
 	GetFollowersForUser(ctx *fiber.Ctx) ([]entity.User, error)
