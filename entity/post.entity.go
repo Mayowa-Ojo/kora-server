@@ -37,13 +37,14 @@ type Post struct {
 
 // SharedPost -
 type SharedPost struct {
-	ID        primitive.ObjectID `json:"id"        bson:"_id"`
-	Comment   string             `json:"comment"   bson:"comment"`
-	Post      *Post              `json:"post"      bson:"post"`
-	Author    *User              `json:"author"    bson:"author"`
-	CreatedAt time.Time          `json:"createdAt" bson:"created_at"`
-	UpdatedAt time.Time          `json:"updatedAt" bson:"updated_at"`
-	DeletedAt time.Time          `json:"deletedAt" bson:"deleted_at"`
+	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Comment   string             `json:"comment"      bson:"comment"`
+	Post      *Post              `json:"post"         bson:"post"`
+	Author    *User              `json:"author"       bson:"author"`
+	Space     *Space             `json:"space"        bson:"space"`
+	CreatedAt time.Time          `json:"createdAt"    bson:"created_at"`
+	UpdatedAt time.Time          `json:"updatedAt"    bson:"updated_at"`
+	DeletedAt time.Time          `json:"deletedAt"    bson:"deleted_at"`
 }
 
 // Validate - validates struct fields against defined rules
