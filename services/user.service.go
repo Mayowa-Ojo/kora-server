@@ -17,9 +17,11 @@ import (
 
 // UserService - business logic layer/service for users
 type UserService struct {
-	userRepo  domain.UserRepository
-	postRepo  domain.PostRepository
-	topicRepo domain.TopicRepository
+	userRepo       domain.UserRepository
+	postRepo       domain.PostRepository
+	topicRepo      domain.TopicRepository
+	spaceRepo      domain.SpaceRepository
+	sharedPostRepo domain.SharedPostRepository
 }
 
 // NewUserService -
@@ -27,11 +29,15 @@ func NewUserService(
 	u domain.UserRepository,
 	p domain.PostRepository,
 	t domain.TopicRepository,
+	s domain.SpaceRepository,
+	sp domain.SharedPostRepository,
 ) domain.UserService {
 	return &UserService{
 		u,
 		p,
 		t,
+		s,
+		sp,
 	}
 }
 
@@ -44,8 +50,10 @@ func (u *UserService) GetAll(ctx *fiber.Ctx) ([]entity.User, error) {
 func (u *UserService) GetOne(ctx *fiber.Ctx) (*entity.User, error) {
 	userID := ctx.Params("id")
 	userObjectID, err := primitive.ObjectIDFromHex(userID)
+
 	filter := bson.D{{Key: "_id", Value: userObjectID}}
 	opts := options.FindOne()
+	opts.SetProjection(bson.D{{Key: "hash", Value: 0}})
 
 	user, err := u.userRepo.GetOne(ctx, filter, opts)
 	if err != nil {
@@ -53,6 +61,22 @@ func (u *UserService) GetOne(ctx *fiber.Ctx) (*entity.User, error) {
 			return nil, constants.ErrNotFound
 		}
 
+		return nil, constants.ErrInternalServer
+	}
+
+	return user, nil
+}
+
+// GetUserProfile -
+func (u *UserService) GetUserProfile(ctx *fiber.Ctx) (*entity.User, error) {
+	username := ctx.Query("q")
+
+	filter := bson.D{{Key: "username", Value: username}}
+	opts := options.FindOne()
+	opts.SetProjection(bson.D{{Key: "hash", Value: 0}})
+
+	user, err := u.userRepo.GetOne(ctx, filter, opts)
+	if err != nil {
 		return nil, constants.ErrInternalServer
 	}
 
@@ -166,15 +190,24 @@ func (u *UserService) UpdateProfile(ctx *fiber.Ctx) (*entity.User, error) {
 
 // GetFollowersForUser -
 func (u *UserService) GetFollowersForUser(ctx *fiber.Ctx) ([]entity.User, error) {
-	user, err := utils.GetUserFromAuthHeader(ctx, u.userRepo)
+	userID := ctx.Params("id")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return nil, constants.ErrUnauthorized
+		return nil, constants.ErrUnprocessableEntity
 	}
 
-	filter := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: user.Followers}}}}
-	opts := options.Find()
+	filter := bson.D{{Key: "_id", Value: userObjectID}}
+	opts := options.FindOne()
 
-	followers, err := u.userRepo.GetMany(ctx, filter, opts)
+	user, err := u.userRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	filter = bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: user.Followers}}}}
+	findOpts := options.Find()
+
+	followers, err := u.userRepo.GetMany(ctx, filter, findOpts)
 	if err != nil {
 		return nil, constants.ErrInternalServer
 	}
@@ -184,70 +217,128 @@ func (u *UserService) GetFollowersForUser(ctx *fiber.Ctx) ([]entity.User, error)
 
 // GetFollowingForUser -
 func (u *UserService) GetFollowingForUser(ctx *fiber.Ctx) ([]entity.User, error) {
-	user, err := utils.GetUserFromAuthHeader(ctx, u.userRepo)
+	userID := ctx.Params("id")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return nil, constants.ErrUnauthorized
+		return nil, constants.ErrUnprocessableEntity
 	}
 
-	filter := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: user.Following}}}}
-	opts := options.Find()
+	filter := bson.D{{Key: "_id", Value: userObjectID}}
+	opts := options.FindOne()
 
-	followers, err := u.userRepo.GetMany(ctx, filter, opts)
+	user, err := u.userRepo.GetOne(ctx, filter, opts)
 	if err != nil {
 		return nil, constants.ErrInternalServer
 	}
 
-	return followers, nil
+	filter = bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: user.Following}}}}
+	findOpts := options.Find()
+
+	following, err := u.userRepo.GetMany(ctx, filter, findOpts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return following, nil
 }
 
 // GetPostsForUser -
 func (u *UserService) GetPostsForUser(ctx *fiber.Ctx) ([]entity.Post, error) {
+	var filter bson.D
+
 	postType := ctx.Query("postType")
+	userID := ctx.Params("id")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+
+	if err != nil {
+		return nil, constants.ErrUnprocessableEntity
+	}
 
 	if postType == "" {
 		return nil, constants.ErrUnprocessableEntity
 	}
 
-	user, err := utils.GetUserFromAuthHeader(ctx, u.userRepo)
-	if err != nil {
-		return nil, constants.ErrUnauthorized
-	}
-
-	var filter bson.D
 	switch postType {
 	case "question":
-		filter = bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: user.Questions}}}}
+		filter = bson.D{{Key: "post_type", Value: "question"}, {Key: "author._id", Value: userObjectID}}
 	case "answer":
-		filter = bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: user.Answers}}}}
+		filter = bson.D{{Key: "post_type", Value: "answer"}, {Key: "author._id", Value: userObjectID}}
 	case "post":
-		filter = bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: user.Posts}}}}
+		filter = bson.D{{Key: "post_type", Value: "post"}, {Key: "author._id", Value: userObjectID}}
+	default:
+		return nil, constants.ErrUnprocessableEntity
 	}
-	opts := options.Find()
 
-	followers, err := u.postRepo.GetMany(ctx, filter, opts)
+	opts := options.Find()
+	posts, err := u.postRepo.GetMany(ctx, filter, opts)
 	if err != nil {
 		return nil, constants.ErrInternalServer
 	}
 
-	return followers, nil
+	return posts, nil
+}
+
+// GetSharedPostsForUser -
+func (u *UserService) GetSharedPostsForUser(ctx *fiber.Ctx) ([]entity.SharedPost, error) {
+	userID := ctx.Params("id")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+
+	if err != nil {
+		return nil, constants.ErrUnprocessableEntity
+	}
+
+	filter := bson.D{{Key: "author._id", Value: userObjectID}}
+	opts := options.Find()
+
+	sharedPosts, err := u.sharedPostRepo.GetMany(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return sharedPosts, nil
 }
 
 // GetSpacesForUser -
-func (u *UserService) GetSpacesForUser(ctx *fiber.Ctx) ([]entity.Post, error) {
-	return nil, nil
+func (u *UserService) GetSpacesForUser(ctx *fiber.Ctx) ([]entity.Space, error) {
+	userID := ctx.Params("id")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, constants.ErrUnprocessableEntity
+	}
+
+	filter := bson.D{{Key: "followers", Value: bson.D{
+		{Key: "$elemMatch", Value: bson.D{{Key: "$eq", Value: userObjectID}}},
+	}}}
+	opts := options.Find()
+
+	spaces, err := u.spaceRepo.GetMany(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return spaces, nil
 }
 
 // GetKnowledgeForUser -
 func (u *UserService) GetKnowledgeForUser(ctx *fiber.Ctx) ([]entity.Topic, error) {
-	user, err := utils.GetUserFromAuthHeader(ctx, u.userRepo)
+	userID := ctx.Params("id")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return nil, constants.ErrUnauthorized
+		return nil, constants.ErrUnprocessableEntity
 	}
 
-	filter := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: user.Knowledge}}}}
-	opts := options.Find()
+	filter := bson.D{{Key: "_id", Value: userObjectID}}
+	opts := options.FindOne()
 
-	topics, err := u.topicRepo.GetMany(ctx, filter, opts)
+	user, err := u.userRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	filter = bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: user.Knowledge}}}}
+	findOpts := options.Find()
+
+	topics, err := u.topicRepo.GetMany(ctx, filter, findOpts)
 	if err != nil {
 		return nil, constants.ErrInternalServer
 	}
