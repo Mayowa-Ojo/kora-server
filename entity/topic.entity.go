@@ -11,6 +11,7 @@ import (
 type Topic struct {
 	ID        primitive.ObjectID   `json:"id,omitempty" bson:"_id,omitempty"`
 	Name      string               `json:"name"         bson:"name"`
+	Avatar    string               `json:"avatar"       bson:"avatar"`
 	Followers []primitive.ObjectID `json:"followers"    bson:"followers"`
 	Posts     []primitive.ObjectID `json:"posts"        bson:"posts"`
 	Spaces    []primitive.ObjectID `json:"spaces"       bson:"spaces"`
@@ -31,4 +32,5 @@ func (t *Topic) SetDefaultValues() {
 	t.Followers = []primitive.ObjectID{}
 	t.Posts = []primitive.ObjectID{}
 	t.Spaces = []primitive.ObjectID{}
+	t.Avatar = "https://kora-s3-bucket.s3.us-east-2.amazonaws.com/images/default-topic-icon.png"
 }
