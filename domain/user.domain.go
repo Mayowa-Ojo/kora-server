@@ -18,7 +18,8 @@ type UserService interface {
 	GetFollowersForUser(ctx *fiber.Ctx) ([]entity.User, error)
 	GetFollowingForUser(ctx *fiber.Ctx) ([]entity.User, error)
 	GetPostsForUser(ctx *fiber.Ctx) ([]entity.Post, error)
-	GetSpacesForUser(ctx *fiber.Ctx) ([]entity.Post, error)
+	GetSharedPostsForUser(ctx *fiber.Ctx) ([]entity.SharedPost, error)
+	GetSpacesForUser(ctx *fiber.Ctx) ([]entity.Space, error)
 	GetKnowledgeForUser(ctx *fiber.Ctx) ([]entity.Topic, error)
 	FollowUser(ctx *fiber.Ctx) error
 	UnfollowUser(ctx *fiber.Ctx) error
