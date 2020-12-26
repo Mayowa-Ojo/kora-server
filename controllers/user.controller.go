@@ -44,6 +44,19 @@ func (u *UserController) GetOne(ctx *fiber.Ctx) {
 	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", user)
 }
 
+// GetUserProfile - fetch user profile with matching query [username]
+func (u *UserController) GetUserProfile(ctx *fiber.Ctx) {
+	user, err := u.userService.GetUserProfile(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", user)
+}
+
 // UpdateProfile -
 func (u *UserController) UpdateProfile(ctx *fiber.Ctx) {
 	user, err := u.userService.UpdateProfile(ctx)
@@ -96,6 +109,19 @@ func (u *UserController) GetPostsForUser(ctx *fiber.Ctx) {
 	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", posts)
 }
 
+// GetSharedPostsForUser -
+func (u *UserController) GetSharedPostsForUser(ctx *fiber.Ctx) {
+	sharedPosts, err := u.userService.GetSharedPostsForUser(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", sharedPosts)
+}
+
 // GetKnowledgeForUser -
 func (u *UserController) GetKnowledgeForUser(ctx *fiber.Ctx) {
 	knowledge, err := u.userService.GetKnowledgeForUser(ctx)
@@ -107,6 +133,19 @@ func (u *UserController) GetKnowledgeForUser(ctx *fiber.Ctx) {
 
 	r := utils.NewResponse()
 	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", knowledge)
+}
+
+// GetSpacesForUser -
+func (u *UserController) GetSpacesForUser(ctx *fiber.Ctx) {
+	spaces, err := u.userService.GetSpacesForUser(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", spaces)
 }
 
 // FollowUser -
