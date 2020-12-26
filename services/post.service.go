@@ -237,6 +237,10 @@ func (p PostService) Create(ctx *fiber.Ctx) (*entity.Post, error) {
 func (p PostService) CreateSharedPost(ctx *fiber.Ctx) (*entity.SharedPost, error) {
 	postID := ctx.Params("id")
 	postObjectID, err := primitive.ObjectIDFromHex(postID)
+
+	spaceID := ctx.Query("spaceId")
+	spaceObjectID, err := primitive.ObjectIDFromHex(spaceID)
+
 	if err != nil {
 		return nil, constants.ErrUnprocessableEntity
 	}
@@ -260,6 +264,16 @@ func (p PostService) CreateSharedPost(ctx *fiber.Ctx) (*entity.SharedPost, error
 		return nil, constants.ErrInternalServer
 	}
 
+	filter = bson.D{{Key: "_id", Value: spaceObjectID}}
+	opts = options.FindOne()
+	space, err := p.spaceRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		if err == mg.ErrNoDocuments || err == mg.ErrNilDocument {
+			return nil, constants.ErrNotFound
+		}
+		return nil, constants.ErrInternalServer
+	}
+
 	// fetch author for post
 	user, err := utils.GetUserFromAuthHeader(ctx, p.userRepo)
 	if err != nil {
@@ -270,6 +284,7 @@ func (p PostService) CreateSharedPost(ctx *fiber.Ctx) (*entity.SharedPost, error
 		Comment: requestBody.ShareComment,
 		Author:  user,
 		Post:    post,
+		Space:   space,
 	}
 
 	insertResult, err := p.sharedPostRepo.Create(ctx, instance)
