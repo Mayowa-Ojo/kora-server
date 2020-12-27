@@ -30,12 +30,12 @@ type Space struct {
 	Details      string               `json:"details"      bson:"details"`
 	Icon         string               `json:"icon"         bson:"icon"`
 	CoverPhoto   string               `json:"coverPhoto"   bson:"cover_photo"`
-	Followers    []primitive.ObjectID `json:"-"            bson:"followers"`
+	Followers    []primitive.ObjectID `json:"followers"    bson:"followers"`
 	Admins       []primitive.ObjectID `json:"admins"       bson:"admins"`
 	Moderators   []primitive.ObjectID `json:"moderators"   bson:"moderators"`
 	Contributors []primitive.ObjectID `json:"contributors" bson:"contributors"`
-	Posts        []primitive.ObjectID `json:"-"            bson:"posts"`
-	Topics       []primitive.ObjectID `json:"-"            bson:"topics"`
+	Posts        []primitive.ObjectID `json:"posts"        bson:"posts"`
+	Topics       []primitive.ObjectID `json:"topics"       bson:"topics"`
 	PinnedPost   primitive.ObjectID   `json:"pinnedPost"   bson:"pinned_post"`
 	Settings     SpaceSettings        `json:"settings"     bson:"settings"`
 	CreatedAt    time.Time            `json:"createdAt"    bson:"created_at"`
