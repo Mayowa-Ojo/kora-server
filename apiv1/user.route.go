@@ -29,7 +29,7 @@ func NewUserRouter(br fiber.Router, conn *config.DBConn) {
 
 	router.Get("/", userController.GetAll)
 	router.Get("/username", middleware.AuthorizeRoute(), userController.GetUserProfile)
-	router.Get("/:id", userController.GetOne)
+	router.Get("/:id", middleware.AuthorizeRoute(), userController.GetOne)
 	router.Patch("/:id", middleware.AuthorizeRoute(), userController.UpdateProfile)
 	router.Get("/:id/followers", middleware.AuthorizeRoute(), userController.GetFollowersForUser)
 	router.Get("/:id/following", middleware.AuthorizeRoute(), userController.GetFollowingForUser)
