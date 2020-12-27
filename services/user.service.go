@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/Mayowa-Ojo/kora/constants"
@@ -144,12 +145,21 @@ func (u *UserService) UpdateContentViews(ctx *fiber.Ctx) error {
 
 // UpdateProfile -
 func (u *UserService) UpdateProfile(ctx *fiber.Ctx) (*entity.User, error) {
+	type Credentials struct {
+		Profile    string `json:"profile"`
+		Employment string `json:"employment"`
+		Education  string `json:"education"`
+		Location   string `json:"location"`
+		Language   string `json:"language"`
+		Space      string `json:"space"`
+		Topic      string `json:"topic"`
+	}
 	var requestBody struct {
-		Firstname  string `json:"firstname"`
-		Lastname   string `json:"lastname"`
-		About      string `json:"about"`
-		Credential string `json:"credential"`
-		Avatar     string `json:"avatar"`
+		Firstname   string      `json:"firstname"`
+		Lastname    string      `json:"lastname"`
+		About       string      `json:"about"`
+		Credentials Credentials `json:"credentials"`
+		Avatar      string      `json:"avatar"`
 	}
 
 	userID, err := utils.GetJwtClaims(ctx, "userId")
@@ -168,6 +178,19 @@ func (u *UserService) UpdateProfile(ctx *fiber.Ctx) (*entity.User, error) {
 	update := bson.D{{Key: "$set", Value: bson.D{}}}
 
 	for k, v := range mapRequestBody {
+		if _, ok := v.(map[string]interface{}); ok { // assert a nested struct field and handle its update
+
+			for kk, vv := range v.(map[string]interface{}) {
+				if vv != "" {
+					update[0].Value = append(
+						update[0].Value.(bson.D), bson.E{Key: strings.ToLower(fmt.Sprintf("%s.%s", k, kk)), Value: vv},
+					)
+				}
+			}
+
+			continue
+		}
+
 		if v != "" {
 			update[0].Value = append(update[0].Value.(bson.D), bson.E{Key: strings.ToLower(k), Value: v})
 		}
@@ -179,8 +202,9 @@ func (u *UserService) UpdateProfile(ctx *fiber.Ctx) (*entity.User, error) {
 
 	filter = bson.D{{Key: "_id", Value: userObjectID}}
 	opts := options.FindOne()
-	user, err := u.userRepo.GetOne(ctx, filter, opts)
+	opts.SetProjection(bson.D{{Key: "hash", Value: 0}})
 
+	user, err := u.userRepo.GetOne(ctx, filter, opts)
 	if err != nil {
 		return nil, constants.ErrInternalServer
 	}
