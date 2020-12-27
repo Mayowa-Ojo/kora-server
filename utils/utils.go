@@ -152,7 +152,15 @@ func ErrorHandler(ctx *fiber.Ctx, err error) {
 // JWTError -
 func JWTError(ctx *fiber.Ctx, err error) {
 	if err.Error() == "Missing or malformed JWT" {
-		ctx.Next(constants.ErrUnprocessableEntity)
+		ctx.Next(constants.ErrUnauthorized)
+
+		return
+	}
+
+	if err.Error() == "Token is expired" {
+		ctx.Next(constants.ErrUnauthorized)
+
+		return
 	}
 
 	ctx.Next(constants.ErrInvalidCredentials)
