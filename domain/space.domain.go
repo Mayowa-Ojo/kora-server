@@ -15,6 +15,7 @@ type SpaceService interface {
 	GetBySlug(ctx *fiber.Ctx) (*entity.Space, error)
 	Create(ctx *fiber.Ctx) (*entity.Space, error)
 	GetPostsForSpace(ctx *fiber.Ctx) ([]entity.Post, error)
+	GetSuggestedSpaces(ctx *fiber.Ctx) ([]entity.Space, error)
 	GetMembersForSpace(ctx *fiber.Ctx) (types.GenericMap, error)
 	UpdateProfileByAdmin(ctx *fiber.Ctx) (*entity.Space, error)
 	DeleteSpaceByAdmin(ctx *fiber.Ctx) error
