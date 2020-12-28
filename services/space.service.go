@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/Mayowa-Ojo/kora/constants"
 	"github.com/Mayowa-Ojo/kora/domain"
 	"github.com/Mayowa-Ojo/kora/entity"
@@ -206,6 +208,28 @@ func (s *SpaceService) GetMembersForSpace(ctx *fiber.Ctx) (types.GenericMap, err
 	}
 
 	return result, nil
+}
+
+// GetSuggestedSpaces - /api/v1/spaces/suggestions
+func (s *SpaceService) GetSuggestedSpaces(ctx *fiber.Ctx) ([]entity.Space, error) {
+	// should implement better suggestion logic
+	userID, err := utils.GetJwtClaims(ctx, "userId")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, constants.ErrUnauthorized
+	}
+
+	filter := bson.D{{Key: "followers", Value: bson.D{{Key: "$nin", Value: []primitive.ObjectID{userObjectID}}}}}
+	opts := options.Find()
+	opts.SetLimit(20)
+
+	spaces, err := s.spaceRepo.GetMany(ctx, filter, opts)
+	if err != nil {
+		fmt.Println(err)
+		return nil, constants.ErrInternalServer
+	}
+
+	return spaces, nil
 }
 
 // UpdateProfileByAdmin -

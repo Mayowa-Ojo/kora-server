@@ -96,6 +96,19 @@ func (s *SpaceController) GetMembersForSpace(ctx *fiber.Ctx) {
 	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", members)
 }
 
+// GetSuggestedSpaces -
+func (s *SpaceController) GetSuggestedSpaces(ctx *fiber.Ctx) {
+	spaces, err := s.spaceService.GetSuggestedSpaces(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", spaces)
+}
+
 // UpdateProfileByAdmin -
 func (s *SpaceController) UpdateProfileByAdmin(ctx *fiber.Ctx) {
 	space, err := s.spaceService.UpdateProfileByAdmin(ctx)
