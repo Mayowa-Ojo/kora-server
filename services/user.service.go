@@ -212,6 +212,72 @@ func (u *UserService) UpdateProfile(ctx *fiber.Ctx) (*entity.User, error) {
 	return user, nil
 }
 
+// UpdateUserKnowledge -
+func (u *UserService) UpdateUserKnowledge(ctx *fiber.Ctx) ([]entity.Topic, error) {
+	var requestBody struct {
+		Knowledge []string `json:"knowledge"`
+	}
+
+	userID, err := utils.GetJwtClaims(ctx, "userId")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, constants.ErrUnauthorized
+	}
+
+	if err := ctx.BodyParser(&requestBody); err != nil {
+		return nil, constants.ErrUnprocessableEntity
+	}
+
+	for _, v := range requestBody.Knowledge {
+		filter := bson.D{{Key: "name", Value: v}}
+		_, err := u.topicRepo.GetOne(ctx, filter)
+
+		if err != nil && err != mongo.ErrNoDocuments {
+			return nil, constants.ErrInternalServer
+		}
+
+		if err == mongo.ErrNoDocuments {
+			// create topic
+			instance := &entity.Topic{
+				Name: v,
+			}
+
+			if err := instance.Validate(); err != nil {
+				return nil, constants.ErrUnprocessableEntity
+			}
+
+			instance.SetDefaultValues()
+
+			_, err := u.topicRepo.Create(ctx, instance)
+			if err != nil {
+				return nil, constants.ErrInternalServer
+			}
+		}
+	}
+
+	filter := bson.D{{Key: "name", Value: bson.D{{Key: "$in", Value: requestBody.Knowledge}}}}
+	opts := options.Find()
+
+	topics, err := u.topicRepo.GetMany(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	var topicIDs []primitive.ObjectID
+	for _, v := range topics {
+		topicIDs = append(topicIDs, v.ID)
+	}
+
+	filter = bson.D{{Key: "_id", Value: userObjectID}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "knowledge", Value: topicIDs}}}}
+
+	if _, err := u.userRepo.UpdateOne(ctx, filter, update); err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return topics, nil
+}
+
 // GetFollowersForUser -
 func (u *UserService) GetFollowersForUser(ctx *fiber.Ctx) ([]entity.User, error) {
 	userID := ctx.Params("id")

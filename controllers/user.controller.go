@@ -70,6 +70,19 @@ func (u *UserController) UpdateProfile(ctx *fiber.Ctx) {
 	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", user)
 }
 
+// UpdateUserKnowledge -
+func (u *UserController) UpdateUserKnowledge(ctx *fiber.Ctx) {
+	topics, err := u.userService.UpdateUserKnowledge(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", topics)
+}
+
 // GetFollowersForUser -
 func (u *UserController) GetFollowersForUser(ctx *fiber.Ctx) {
 	followers, err := u.userService.GetFollowersForUser(ctx)
