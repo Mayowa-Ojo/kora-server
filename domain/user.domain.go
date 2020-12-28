@@ -21,6 +21,7 @@ type UserService interface {
 	GetSharedPostsForUser(ctx *fiber.Ctx) ([]entity.SharedPost, error)
 	GetSpacesForUser(ctx *fiber.Ctx) ([]entity.Space, error)
 	GetKnowledgeForUser(ctx *fiber.Ctx) ([]entity.Topic, error)
+	UpdateUserKnowledge(ctx *fiber.Ctx) ([]entity.Topic, error)
 	FollowUser(ctx *fiber.Ctx) error
 	UnfollowUser(ctx *fiber.Ctx) error
 	SetPinnedPost(ctx *fiber.Ctx) error
