@@ -299,6 +299,15 @@ func (p PostService) CreateSharedPost(ctx *fiber.Ctx) (*entity.SharedPost, error
 		return nil, constants.ErrInternalServer
 	}
 
+	filter = bson.D{{Key: "_id", Value: post.ID}}
+	update := bson.D{
+		{Key: "$inc", Value: bson.D{{Key: "shares", Value: 1}}},
+		{Key: "$addToSet", Value: bson.D{{Key: "shared_by", Value: user.ID}}},
+	}
+	if _, err := p.postRepo.UpdateOne(ctx, filter, update); err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
 	return sharedPost, nil
 }
 
