@@ -3,6 +3,7 @@ package apiv1
 import (
 	"github.com/Mayowa-Ojo/kora/config"
 	"github.com/Mayowa-Ojo/kora/controllers"
+	"github.com/Mayowa-Ojo/kora/middleware"
 	"github.com/Mayowa-Ojo/kora/repository"
 	"github.com/Mayowa-Ojo/kora/services"
 	"github.com/gofiber/fiber"
@@ -24,16 +25,17 @@ func NewSpaceRouter(br fiber.Router, conn *config.DBConn) {
 	spaceService := services.NewSpaceService(spaceRepo, postRepo, userRepo)
 	spaceController := controllers.NewSpaceController(spaceService)
 
-	router.Get("/slug", spaceController.GetBySlug)
-	router.Get("/:id", spaceController.GetOne)
-	router.Get("/", spaceController.GetAll)
-	router.Post("/", spaceController.Create)
-	router.Get("/:id/posts", spaceController.GetPostsForSpace)
-	router.Get("/:id/people", spaceController.GetMembersForSpace)
-	router.Patch("/:id", spaceController.UpdateProfileByAdmin)
-	router.Patch("/:/follow", spaceController.FollowSpace)
-	router.Patch("/:id/unfollow", spaceController.UnfollowSpace)
-	router.Patch("/:id/pin", spaceController.SetPinnedPost)
-	router.Patch("/:id/unpin", spaceController.UnsetPinnedPost)
-	router.Delete("/:id", spaceController.DeleteSpaceByAdmin)
+	router.Get("/slug", middleware.AuthorizeRoute(), spaceController.GetBySlug)
+	router.Get("/suggestions", middleware.AuthorizeRoute(), spaceController.GetSuggestedSpaces)
+	router.Get("/:id", middleware.AuthorizeRoute(), spaceController.GetOne)
+	router.Get("/", middleware.AuthorizeRoute(), spaceController.GetAll)
+	router.Post("/", middleware.AuthorizeRoute(), spaceController.Create)
+	router.Get("/:id/posts", middleware.AuthorizeRoute(), spaceController.GetPostsForSpace)
+	router.Get("/:id/people", middleware.AuthorizeRoute(), spaceController.GetMembersForSpace)
+	router.Patch("/:id", middleware.AuthorizeRoute(), spaceController.UpdateProfileByAdmin)
+	router.Patch("/:/follow", middleware.AuthorizeRoute(), spaceController.FollowSpace)
+	router.Patch("/:id/unfollow", middleware.AuthorizeRoute(), spaceController.UnfollowSpace)
+	router.Patch("/:id/pin", middleware.AuthorizeRoute(), spaceController.SetPinnedPost)
+	router.Patch("/:id/unpin", middleware.AuthorizeRoute(), spaceController.UnsetPinnedPost)
+	router.Delete("/:id", middleware.AuthorizeRoute(), spaceController.DeleteSpaceByAdmin)
 }

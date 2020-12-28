@@ -29,6 +29,7 @@ func NewPostRouter(br fiber.Router, conn *config.DBConn) {
 
 	router.Get("/feed", middleware.AuthorizeRoute(), controller.GetFeedForUser)
 	router.Get("/questions", middleware.AuthorizeRoute(), controller.GetQuestionsForUser)
+	router.Get("/suggestions", middleware.AuthorizeRoute(), controller.GetSuggestedQuestions)
 	router.Get("/slug", middleware.AuthorizeRoute(), controller.GetBySlug)
 	router.Patch("/upvote", middleware.AuthorizeRoute(), controller.UpvotePostByUser)
 	router.Patch("/downvote", middleware.AuthorizeRoute(), controller.DownvotePostByUser)
