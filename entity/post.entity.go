@@ -21,12 +21,12 @@ type Post struct {
 	Shares           int                  `json:"shares"                     bson:"shares"`
 	Views            int                  `json:"views"                      bson:"views"`
 	ShareLink        string               `json:"shareLink"                  bson:"share_link"`
-	SharedBy         []primitive.ObjectID `json:"-"                          bson:"shared_by"`
-	UpvotedBy        []primitive.ObjectID `json:"-"                          bson:"upvoted_by"`
-	DownvotedBy      []primitive.ObjectID `json:"-"                          bson:"downvoted_by"`
-	Topics           []primitive.ObjectID `json:"topics,"                    bson:"topics"`
+	SharedBy         []primitive.ObjectID `json:"sharedBy"                   bson:"shared_by"`
+	UpvotedBy        []primitive.ObjectID `json:"upvotedBy"                  bson:"upvoted_by"`
+	DownvotedBy      []primitive.ObjectID `json:"downvotedBy"                bson:"downvoted_by"`
+	Topics           []primitive.ObjectID `json:"topics"                     bson:"topics"`
 	Followers        []primitive.ObjectID `json:"followers"                  bson:"followers"`
-	Author           *User                `json:"author,omitempty"           bson:"author"`
+	Author           *User                `json:"author"                     bson:"author"`
 	Answers          []primitive.ObjectID `json:"answers"                    bson:"answers"`
 	ResponseTo       primitive.ObjectID   `json:"responseTo"                 bson:"response_to"`
 	Comments         []primitive.ObjectID `json:"comments"                   bson:"comments"`
