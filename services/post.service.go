@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/Mayowa-Ojo/kora/constants"
@@ -387,6 +388,31 @@ func (p PostService) GetAnswersForQuestion(ctx *fiber.Ctx) ([]entity.Post, error
 	posts, err := p.postRepo.GetMany(ctx, filter, opts)
 
 	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return posts, nil
+}
+
+// GetSuggestedQuestions - /api/v1/posts/suggestions
+func (p *PostService) GetSuggestedQuestions(ctx *fiber.Ctx) ([]entity.Post, error) {
+	// should implement better suggestion logic
+	userID, err := utils.GetJwtClaims(ctx, "userId")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, constants.ErrUnauthorized
+	}
+
+	filter := bson.D{
+		{Key: "post_type", Value: "question"},
+		{Key: "author._id", Value: bson.D{{Key: "$ne", Value: userObjectID}}},
+	}
+	opts := options.Find()
+	opts.SetLimit(20)
+
+	posts, err := p.postRepo.GetMany(ctx, filter, opts)
+	if err != nil {
+		fmt.Println(err)
 		return nil, constants.ErrInternalServer
 	}
 
