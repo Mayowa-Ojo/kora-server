@@ -37,6 +37,7 @@ func NewUserRouter(br fiber.Router, conn *config.DBConn) {
 	router.Get("/:id/shares", middleware.AuthorizeRoute(), userController.GetSharedPostsForUser)
 	router.Get("/:id/knowledge", middleware.AuthorizeRoute(), userController.GetKnowledgeForUser)
 	router.Get("/:id/spaces", middleware.AuthorizeRoute(), userController.GetSpacesForUser)
+	router.Patch("/:id/knowledge", middleware.AuthorizeRoute(), userController.UpdateUserKnowledge)
 	router.Patch("/:id/follow", middleware.AuthorizeRoute(), userController.FollowUser)
 	router.Patch("/:id/unfollow", middleware.AuthorizeRoute(), userController.UnfollowUser)
 	router.Patch("/pin", middleware.AuthorizeRoute(), userController.SetPinnedPost)
