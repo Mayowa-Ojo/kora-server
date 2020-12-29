@@ -330,28 +330,15 @@ func (p PostService) DeleteOne(ctx *fiber.Ctx) error {
 }
 
 // GetFeedForUser - fetch posts which satisfies ones of 3 conditions:
-//                  <author of the post is followed by the current user>
-//                  <the post belongs to a space the current user is subscribed to>
+// <author of the post is followed by the current user>
+// <the post belongs to a space the current user is subscribed to>
 func (p PostService) GetFeedForUser(ctx *fiber.Ctx) ([]entity.Post, error) {
-	user, err := utils.GetUserFromAuthHeader(ctx, p.userRepo)
-	if err != nil {
-		return nil, err
-	}
+	// TODO: queries should satisfy the above listed conditions
 
-	if len(user.Following) < 1 && len(user.Spaces) < 1 {
-		return []entity.Post{}, nil
-	}
-
-	filter := bson.D{{
-		Key: "$or",
-		Value: bson.A{
-			bson.D{{Key: "author._id", Value: bson.D{{Key: "$in", Value: user.Following}}}},
-			bson.D{{Key: "space._id", Value: bson.D{{Key: "$in", Value: user.Spaces}}}},
-		},
-	}}
+	filter := bson.D{{Key: "post_type", Value: "answer"}}
 	postOpts := options.Find()
-	posts, err := p.postRepo.GetMany(ctx, filter, postOpts)
 
+	posts, err := p.postRepo.GetMany(ctx, filter, postOpts)
 	if err != nil {
 		return nil, constants.ErrInternalServer
 	}
