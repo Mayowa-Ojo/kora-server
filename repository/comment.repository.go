@@ -41,11 +41,11 @@ func (c *CommentRepository) GetAll(ctx *fiber.Ctx) ([]entity.Comment, error) {
 }
 
 // GetOne -
-func (c *CommentRepository) GetOne(ctx *fiber.Ctx, filter types.Any) (*entity.Comment, error) {
+func (c *CommentRepository) GetOne(ctx *fiber.Ctx, filter types.Any, opts *options.FindOneOptions) (*entity.Comment, error) {
 	col := c.DB.Collection("comments")
 	comment := new(entity.Comment)
 
-	result := col.FindOne(ctx.Fasthttp, filter)
+	result := col.FindOne(ctx.Fasthttp, filter, opts)
 	if err := result.Decode(&comment); err != nil {
 		return nil, err
 	}
