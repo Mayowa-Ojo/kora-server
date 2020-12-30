@@ -57,6 +57,19 @@ func (c *CommentController) Create(ctx *fiber.Ctx) {
 	r.JSONResponse(ctx, true, fiber.StatusCreated, "[INFO]: Resource created", comment)
 }
 
+// CreateCommentReply - create a reply to a comment and save to DB collection
+func (c *CommentController) CreateCommentReply(ctx *fiber.Ctx) {
+	comment, err := c.commentService.CreateCommentReply(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusCreated, "[INFO]: Resource created", comment)
+}
+
 // GetCommentsForPost -
 func (c *CommentController) GetCommentsForPost(ctx *fiber.Ctx) {
 	comments, err := c.commentService.GetCommentsForPost(ctx)
