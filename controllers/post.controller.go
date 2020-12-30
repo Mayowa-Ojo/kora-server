@@ -8,15 +8,17 @@ import (
 
 // PostController - Structure for a post controller
 type PostController struct {
-	postService domain.PostService
-	userService domain.UserService
+	postService    domain.PostService
+	userService    domain.UserService
+	commentService domain.CommentService
 }
 
 // NewPostController - Creates post controller instance
-func NewPostController(p domain.PostService, u domain.UserService) *PostController {
+func NewPostController(p domain.PostService, u domain.UserService, c domain.CommentService) *PostController {
 	return &PostController{
 		p,
 		u,
+		c,
 	}
 }
 
@@ -63,6 +65,13 @@ func (p *PostController) GetBySlug(ctx *fiber.Ctx) {
 	}
 
 	err = p.userService.UpdateContentViews(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	post, err = p.commentService.AppendCommentsToPost(ctx, post)
 	if err != nil {
 		ctx.Next(err)
 
