@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/Mayowa-Ojo/kora/constants"
 	"github.com/Mayowa-Ojo/kora/domain"
 	"github.com/Mayowa-Ojo/kora/entity"
@@ -96,9 +98,11 @@ func (c *CommentService) GetAll(ctx *fiber.Ctx) ([]entity.Comment, error) {
 func (c *CommentService) GetOne(ctx *fiber.Ctx) (*entity.Comment, error) {
 	id := ctx.Params("id")
 	objectID, err := primitive.ObjectIDFromHex(id)
-	filter := bson.D{{Key: "_id", Value: objectID}}
 
-	comment, err := c.commentRepo.GetOne(ctx, filter)
+	filter := bson.D{{Key: "_id", Value: objectID}}
+	opts := options.FindOne()
+
+	comment, err := c.commentRepo.GetOne(ctx, filter, opts)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, constants.ErrNotFound
@@ -110,13 +114,65 @@ func (c *CommentService) GetOne(ctx *fiber.Ctx) (*entity.Comment, error) {
 	return comment, nil
 }
 
-// Create -
+// Create - [POST] </comments?postId="">
 func (c *CommentService) Create(ctx *fiber.Ctx) (*entity.Comment, error) {
 	var requestBody struct {
 		Content string `json:"content"`
 	}
+
 	postID := ctx.Query("postId")
 	postObjectID, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		return nil, constants.ErrUnprocessableEntity
+	}
+
+	if err := ctx.BodyParser(&requestBody); err != nil {
+		return nil, constants.ErrUnprocessableEntity
+	}
+
+	user, err := utils.GetUserFromAuthHeader(ctx, c.userRepo)
+	if err != nil {
+		return nil, err
+	}
+
+	instance := &entity.Comment{
+		Content:    requestBody.Content,
+		Author:     user,
+		ResponseTo: postObjectID,
+	}
+
+	instance.SetDefaultValues()
+
+	if err := instance.Validate(); err != nil {
+		fmt.Println(err)
+		return nil, constants.ErrUnprocessableEntity
+	}
+
+	insertResult, err := c.commentRepo.Create(ctx, instance)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	filter := bson.D{{Key: "_id", Value: insertResult.InsertedID}}
+	opts := options.FindOne()
+
+	comment, err := c.commentRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return comment, nil
+}
+
+// CreateCommentReply - create a reply to a comment that matches given id
+// [POST] </comments/reply?commentId="">
+func (c *CommentService) CreateCommentReply(ctx *fiber.Ctx) (*entity.Comment, error) {
+	var requestBody struct {
+		Content string `json:"content"`
+	}
+
+	commentID := ctx.Query("commentId")
+	commentObjectID, err := primitive.ObjectIDFromHex(commentID)
 	if err != nil {
 		return nil, constants.ErrUnprocessableEntity
 	}
@@ -126,26 +182,16 @@ func (c *CommentService) Create(ctx *fiber.Ctx) (*entity.Comment, error) {
 		return nil, constants.ErrUnprocessableEntity
 	}
 
+	user, err := utils.GetUserFromAuthHeader(ctx, c.userRepo)
+	if err != nil {
+		return nil, err
+	}
+
 	instance := &entity.Comment{
 		Content:    requestBody.Content,
-		ResponseTo: postObjectID,
+		Author:     user,
+		ResponseTo: commentObjectID,
 	}
-
-	userID, err := utils.GetJwtClaims(ctx, "userId")
-	userObjectID, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		return nil, constants.ErrUnauthorized
-	}
-
-	filter := bson.D{{Key: "_id", Value: userObjectID}}
-	opts := options.FindOne()
-
-	user, err := c.userRepo.GetOne(ctx, filter, opts)
-	if err != nil {
-		return nil, constants.ErrInternalServer
-	}
-
-	instance.Author = user
 
 	if err := instance.Validate(); err != nil {
 		return nil, constants.ErrUnprocessableEntity
@@ -156,13 +202,22 @@ func (c *CommentService) Create(ctx *fiber.Ctx) (*entity.Comment, error) {
 		return nil, constants.ErrInternalServer
 	}
 
-	filter = bson.D{{Key: "_id", Value: insertResult.InsertedID}}
-	comment, err := c.commentRepo.GetOne(ctx, filter)
+	filter := bson.D{{Key: "_id", Value: insertResult.InsertedID}}
+	opts := options.FindOne()
+
+	commentReply, err := c.commentRepo.GetOne(ctx, filter, opts)
 	if err != nil {
 		return nil, constants.ErrInternalServer
 	}
 
-	return comment, nil
+	filter = bson.D{{Key: "_id", Value: commentObjectID}}
+	update := bson.D{{Key: "$addToSet", Value: bson.D{{Key: "replies", Value: commentReply}}}}
+
+	if _, err := c.commentRepo.UpdateOne(ctx, filter, update); err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return commentReply, nil
 }
 
 // GetCommentsForPost - get comments for a post that matches given query
@@ -183,4 +238,38 @@ func (c *CommentService) GetCommentsForPost(ctx *fiber.Ctx) ([]entity.Comment, e
 	}
 
 	return comments, nil
+}
+
+// AppendCommentsToPost - populate comments field for a given post
+func (c *CommentService) AppendCommentsToPost(ctx *fiber.Ctx, post *entity.Post) (*entity.Post, error) {
+	filter := bson.D{{Key: "response_to", Value: post.ID}}
+	opts := options.Find()
+
+	comments, err := c.commentRepo.GetMany(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+	fmt.Println(len(comments))
+	post.Comments = comments
+
+	return post, nil
+}
+
+// AppendCommentsToPosts - populate comments field for a group of post
+func (c *CommentService) AppendCommentsToPosts(ctx *fiber.Ctx, posts []entity.Post) ([]entity.Post, error) {
+	var filter bson.D
+	opts := options.Find()
+
+	for _, v := range posts {
+		filter = bson.D{{Key: "response_to", Value: v.ID}}
+		comments, err := c.commentRepo.GetMany(ctx, filter, opts)
+
+		if err != nil {
+			return nil, constants.ErrInternalServer
+		}
+
+		v.Comments = comments
+	}
+
+	return posts, nil
 }
