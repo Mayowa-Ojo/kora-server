@@ -25,7 +25,8 @@ func NewPostRouter(br fiber.Router, conn *config.DBConn) {
 	spaceRepo := repository.NewSpaceRepository(conn)
 	postService := services.NewPostService(postRepo, userRepo, sharedPostRepo, commentRepo, spaceRepo, topicRepo)
 	userService := services.NewUserService(userRepo, postRepo, topicRepo, spaceRepo, sharedPostRepo)
-	controller := controllers.NewPostController(postService, userService)
+	commentService := services.NewCommentService(commentRepo, userRepo, postRepo)
+	controller := controllers.NewPostController(postService, userService, commentService)
 
 	router.Get("/feed", middleware.AuthorizeRoute(), controller.GetFeedForUser)
 	router.Get("/questions", middleware.AuthorizeRoute(), controller.GetQuestionsForUser)

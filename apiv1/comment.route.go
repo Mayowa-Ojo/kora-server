@@ -26,6 +26,7 @@ func NewCommentRouter(br fiber.Router, conn *config.DBConn) {
 	commentController := controllers.NewCommentController(commentService)
 
 	router.Get("/:id", commentController.GetOne)
-	router.Get("/", commentController.GetAll)
-	router.Post("/", middleware.AuthorizeRoute(), commentController.Create) // </comments?postId={}>
+	router.Get("/", middleware.AuthorizeRoute(), commentController.GetCommentsForPost)       // <comments?postId={}>
+	router.Post("/", middleware.AuthorizeRoute(), commentController.Create)                  // </comments?postId={}>
+	router.Post("/reply", middleware.AuthorizeRoute(), commentController.CreateCommentReply) // </comments/reply?commentId={}>
 }
