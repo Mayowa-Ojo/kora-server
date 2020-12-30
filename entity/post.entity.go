@@ -29,7 +29,7 @@ type Post struct {
 	Author           *User                `json:"author"                     bson:"author"`
 	Answers          []primitive.ObjectID `json:"answers"                    bson:"answers"`
 	ResponseTo       primitive.ObjectID   `json:"responseTo"                 bson:"response_to"`
-	Comments         []primitive.ObjectID `json:"comments"                   bson:"comments"`
+	Comments         []Comment            `json:"comments"                   bson:"comments"`
 	CreatedAt        time.Time            `json:"createdAt"                  bson:"created_at"`
 	UpdatedAt        time.Time            `json:"updatedAt"                  bson:"updated_at"`
 	DeletedAt        time.Time            `json:"deletedAt"                  bson:"deleted_at"`
@@ -75,5 +75,5 @@ func (p *Post) SetDefaultValues() {
 	p.Topics = []primitive.ObjectID{}
 	p.Followers = []primitive.ObjectID{}
 	p.Answers = []primitive.ObjectID{}
-	p.Comments = []primitive.ObjectID{}
+	p.Comments = []Comment{}
 }
