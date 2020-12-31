@@ -75,4 +75,6 @@ func (u *User) SetDefaultValues() {
 	u.Knowledge = []primitive.ObjectID{}
 	u.Shares = []primitive.ObjectID{}
 	u.Avatar = "https://kora-s3-bucket.s3.us-east-2.amazonaws.com/images/default-user-avatar.png"
+	u.CreatedAt = time.Now()
+	u.UpdatedAt = time.Now()
 }

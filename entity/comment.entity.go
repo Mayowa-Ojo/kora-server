@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"time"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -14,6 +16,9 @@ type Comment struct {
 	Replies    []Comment          `json:"replies"      bson:"replies"`
 	Upvotes    int                `json:"upvotes"      bson:"upvotes"`
 	Downvotes  int                `json:"downvotes"    bson:"downvotes"`
+	CreatedAt  time.Time          `json:"createdAt"    bson:"created_at"`
+	UpdatedAt  time.Time          `json:"updatedAt"    bson:"updated_at"`
+	DeletedAt  time.Time          `json:"deletedAt"    bson:"deleted_at"`
 }
 
 // Validate - validates struct fields against defined rules
@@ -28,4 +33,6 @@ func (c Comment) Validate() error {
 // SetDefaultValues - set default values <[]> to array fields instead of <nil>
 func (c *Comment) SetDefaultValues() {
 	c.Replies = []Comment{}
+	c.CreatedAt = time.Now()
+	c.UpdatedAt = time.Now()
 }

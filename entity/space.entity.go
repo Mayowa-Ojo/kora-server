@@ -62,4 +62,6 @@ func (s *Space) SetDefaultValues() {
 	s.Topics = []primitive.ObjectID{}
 	s.Icon = "https://kora-s3-bucket.s3.us-east-2.amazonaws.com/images/default-space-icon.png"
 	s.CoverPhoto = "https://kora-s3-bucket.s3.us-east-2.amazonaws.com/images/default-space-cover.png"
+	s.CreatedAt = time.Now()
+	s.UpdatedAt = time.Now()
 }

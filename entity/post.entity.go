@@ -76,4 +76,6 @@ func (p *Post) SetDefaultValues() {
 	p.Followers = []primitive.ObjectID{}
 	p.Answers = []primitive.ObjectID{}
 	p.Comments = []Comment{}
+	p.CreatedAt = time.Now()
+	p.UpdatedAt = time.Now()
 }

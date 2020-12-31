@@ -33,4 +33,6 @@ func (t *Topic) SetDefaultValues() {
 	t.Posts = []primitive.ObjectID{}
 	t.Spaces = []primitive.ObjectID{}
 	t.Avatar = "https://kora-s3-bucket.s3.us-east-2.amazonaws.com/images/default-topic-icon.png"
+	t.CreatedAt = time.Now()
+	t.UpdatedAt = time.Now()
 }
