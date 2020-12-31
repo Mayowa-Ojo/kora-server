@@ -82,3 +82,29 @@ func (c *CommentController) GetCommentsForPost(ctx *fiber.Ctx) {
 	r := utils.NewResponse()
 	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", comments)
 }
+
+// UpvoteCommentByUser -
+func (c *CommentController) UpvoteCommentByUser(ctx *fiber.Ctx) {
+	comment, err := c.commentService.UpvoteCommentByUser(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", comment)
+}
+
+// DownvoteCommentByUser -
+func (c *CommentController) DownvoteCommentByUser(ctx *fiber.Ctx) {
+	comment, err := c.commentService.DownvoteCommentByUser(ctx)
+	if err != nil {
+		ctx.Next(err)
+
+		return
+	}
+
+	r := utils.NewResponse()
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", comment)
+}

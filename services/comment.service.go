@@ -240,6 +240,64 @@ func (c *CommentService) GetCommentsForPost(ctx *fiber.Ctx) ([]entity.Comment, e
 	return comments, nil
 }
 
+// UpvoteCommentByUser - upvote a comment
+func (c *CommentService) UpvoteCommentByUser(ctx *fiber.Ctx) (*entity.Comment, error) {
+	commentID := ctx.Params("id")
+	commentObjectID, err := primitive.ObjectIDFromHex(commentID)
+	if err != nil {
+		return nil, constants.ErrUnprocessableEntity
+	}
+
+	filter := bson.D{{Key: "_id", Value: commentObjectID}}
+	update := bson.D{
+		{Key: "$inc", Value: bson.D{{Key: "upvotes", Value: 1}}},
+	}
+
+	if _, err := c.commentRepo.UpdateOne(ctx, filter, update); err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	filter = bson.D{{Key: "_id", Value: commentObjectID}}
+	opts := options.FindOne()
+
+	comment, err := c.commentRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		fmt.Println(err)
+		return nil, constants.ErrInternalServer
+	}
+
+	return comment, nil
+}
+
+// DownvoteCommentByUser - upvote a comment
+func (c *CommentService) DownvoteCommentByUser(ctx *fiber.Ctx) (*entity.Comment, error) {
+	commentID := ctx.Params("id")
+	commentObjectID, err := primitive.ObjectIDFromHex(commentID)
+	if err != nil {
+		return nil, constants.ErrUnprocessableEntity
+	}
+
+	filter := bson.D{{Key: "_id", Value: commentObjectID}}
+	update := bson.D{
+		{Key: "$inc", Value: bson.D{{Key: "downvotes", Value: 1}}},
+	}
+
+	if _, err := c.commentRepo.UpdateOne(ctx, filter, update); err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	filter = bson.D{{Key: "_id", Value: commentObjectID}}
+	opts := options.FindOne()
+
+	comment, err := c.commentRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		fmt.Println(err)
+		return nil, constants.ErrInternalServer
+	}
+
+	return comment, nil
+}
+
 // AppendCommentsToPost - populate comments field for a given post
 func (c *CommentService) AppendCommentsToPost(ctx *fiber.Ctx, post *entity.Post) (*entity.Post, error) {
 	filter := bson.D{{Key: "response_to", Value: post.ID}}

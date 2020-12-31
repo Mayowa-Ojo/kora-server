@@ -407,57 +407,71 @@ func (p *PostService) GetSuggestedQuestions(ctx *fiber.Ctx) ([]entity.Post, erro
 }
 
 // UpvotePostByUser - upvote a post and add the current user to upvotedBy list
-func (p PostService) UpvotePostByUser(ctx *fiber.Ctx) error {
-	postID := ctx.Params("postId")
+func (p PostService) UpvotePostByUser(ctx *fiber.Ctx) (*entity.Post, error) {
+	postID := ctx.Params("id")
 	postObjectID, err := primitive.ObjectIDFromHex(postID)
 	if err != nil {
-		return constants.ErrUnprocessableEntity
+		return nil, constants.ErrUnprocessableEntity
 	}
 
-	user, err := utils.GetUserFromAuthHeader(ctx, p.userRepo)
+	userID, err := utils.GetJwtClaims(ctx, "userId")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return err
+		return nil, constants.ErrUnauthorized
 	}
 
 	filter := bson.D{{Key: "_id", Value: postObjectID}}
 	update := bson.D{
 		{Key: "$inc", Value: bson.D{{Key: "upvotes", Value: 1}}},
-		{Key: "$push", Value: bson.D{{Key: "upvoted_by", Value: user.ID}}},
+		{Key: "$addToSet", Value: bson.D{{Key: "upvoted_by", Value: userObjectID}}},
 	}
 
 	_, err = p.postRepo.UpdateOne(ctx, filter, update)
 	if err != nil {
-		return constants.ErrInternalServer
+		return nil, constants.ErrInternalServer
 	}
 
-	return nil
+	opts := options.FindOne()
+	post, err := p.postRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return post, nil
 }
 
 // DownvotePostByUser - downvote a post and add the current user to downvotedBy list
-func (p PostService) DownvotePostByUser(ctx *fiber.Ctx) error {
-	postID := ctx.Params("postId")
+func (p PostService) DownvotePostByUser(ctx *fiber.Ctx) (*entity.Post, error) {
+	postID := ctx.Params("id")
 	postObjectID, err := primitive.ObjectIDFromHex(postID)
 	if err != nil {
-		return constants.ErrUnprocessableEntity
+		return nil, constants.ErrUnprocessableEntity
 	}
 
-	user, err := utils.GetUserFromAuthHeader(ctx, p.userRepo)
+	userID, err := utils.GetJwtClaims(ctx, "userId")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return err
+		return nil, constants.ErrUnauthorized
 	}
 
 	filter := bson.D{{Key: "_id", Value: postObjectID}}
 	update := bson.D{
 		{Key: "$inc", Value: bson.D{{Key: "downvotes", Value: 1}}},
-		{Key: "$push", Value: bson.D{{Key: "downvoted_by", Value: user.ID}}},
+		{Key: "$addToSet", Value: bson.D{{Key: "downvoted_by", Value: userObjectID}}},
 	}
 
 	_, err = p.postRepo.UpdateOne(ctx, filter, update)
 	if err != nil {
-		return constants.ErrInternalServer
+		return nil, constants.ErrInternalServer
 	}
 
-	return nil
+	opts := options.FindOne()
+	post, err := p.postRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return post, nil
 }
 
 // FollowPost - follow a post and add user to followers list
@@ -475,7 +489,7 @@ func (p PostService) FollowPost(ctx *fiber.Ctx) error {
 
 	filter := bson.D{{Key: "_id", Value: postObjectID}}
 	update := bson.D{{
-		Key: "$push", Value: bson.D{{Key: "followers", Value: user.ID}},
+		Key: "$addToSet", Value: bson.D{{Key: "followers", Value: user.ID}},
 	}}
 
 	_, err = p.postRepo.UpdateOne(ctx, filter, update)

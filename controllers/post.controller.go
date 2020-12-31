@@ -161,26 +161,28 @@ func (p *PostController) GetSuggestedQuestions(ctx *fiber.Ctx) {
 
 // UpvotePostByUser -
 func (p *PostController) UpvotePostByUser(ctx *fiber.Ctx) {
-	if err := p.postService.UpvotePostByUser(ctx); err != nil {
+	post, err := p.postService.UpvotePostByUser(ctx)
+	if err != nil {
 		ctx.Next(err)
 
 		return
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", nil)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", post)
 }
 
 // DownvotePostByUser -
 func (p *PostController) DownvotePostByUser(ctx *fiber.Ctx) {
-	if err := p.postService.DownvotePostByUser(ctx); err != nil {
+	post, err := p.postService.DownvotePostByUser(ctx)
+	if err != nil {
 		ctx.Next(err)
 
 		return
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", nil)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", post)
 }
 
 // FollowPost -
