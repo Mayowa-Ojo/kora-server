@@ -20,8 +20,8 @@ type PostService interface {
 	GetQuestionsForUser(ctx *fiber.Ctx) ([]entity.Post, error)
 	GetAnswersForQuestion(ctx *fiber.Ctx) ([]entity.Post, error)
 	GetSuggestedQuestions(ctx *fiber.Ctx) ([]entity.Post, error)
-	UpvotePostByUser(ctx *fiber.Ctx) error
-	DownvotePostByUser(ctx *fiber.Ctx) error
+	UpvotePostByUser(ctx *fiber.Ctx) (*entity.Post, error)
+	DownvotePostByUser(ctx *fiber.Ctx) (*entity.Post, error)
 	FollowPost(ctx *fiber.Ctx) error
 	UnfollowPost(ctx *fiber.Ctx) error
 	AddTopicsToPost(ctx *fiber.Ctx) ([]entity.Topic, error)

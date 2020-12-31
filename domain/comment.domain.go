@@ -15,6 +15,8 @@ type CommentService interface {
 	Create(ctx *fiber.Ctx) (*entity.Comment, error)
 	CreateCommentReply(ctx *fiber.Ctx) (*entity.Comment, error)
 	GetCommentsForPost(ctx *fiber.Ctx) ([]entity.Comment, error)
+	UpvoteCommentByUser(ctx *fiber.Ctx) (*entity.Comment, error)
+	DownvoteCommentByUser(ctx *fiber.Ctx) (*entity.Comment, error)
 	AppendCommentsToPost(ctx *fiber.Ctx, post *entity.Post) (*entity.Post, error)
 	AppendCommentsToPosts(ctx *fiber.Ctx, posts []entity.Post) ([]entity.Post, error)
 }
