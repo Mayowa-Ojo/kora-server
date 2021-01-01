@@ -60,7 +60,7 @@ func (u User) Validate() error {
 		validation.Field(&u.Firstname, validation.Required),
 		validation.Field(&u.Lastname, validation.Required),
 		validation.Field(&u.Email, emailRule...),
-		validation.Field(&u.Credentials.Profile, validation.Length(1, 60)),
+		// validation.Field(&u.Credentials.Profile, validation.Length(1, 60)),
 	)
 }
 
