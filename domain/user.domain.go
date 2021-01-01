@@ -22,8 +22,8 @@ type UserService interface {
 	GetSpacesForUser(ctx *fiber.Ctx) ([]entity.Space, error)
 	GetKnowledgeForUser(ctx *fiber.Ctx) ([]entity.Topic, error)
 	UpdateUserKnowledge(ctx *fiber.Ctx) ([]entity.Topic, error)
-	FollowUser(ctx *fiber.Ctx) error
-	UnfollowUser(ctx *fiber.Ctx) error
+	FollowUser(ctx *fiber.Ctx) (*entity.User, error)
+	UnfollowUser(ctx *fiber.Ctx) (*entity.User, error)
 	SetPinnedPost(ctx *fiber.Ctx) error
 	UnsetPinnedPost(ctx *fiber.Ctx) error
 }

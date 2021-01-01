@@ -19,8 +19,8 @@ type SpaceService interface {
 	GetMembersForSpace(ctx *fiber.Ctx) (types.GenericMap, error)
 	UpdateProfileByAdmin(ctx *fiber.Ctx) (*entity.Space, error)
 	DeleteSpaceByAdmin(ctx *fiber.Ctx) error
-	FollowSpace(ctx *fiber.Ctx) error
-	UnfollowSpace(ctx *fiber.Ctx) error
+	FollowSpace(ctx *fiber.Ctx) (*entity.User, error)
+	UnfollowSpace(ctx *fiber.Ctx) (*entity.User, error)
 	SetPinnedPost(ctx *fiber.Ctx) error
 	UnsetPinnedPost(ctx *fiber.Ctx) error
 }
