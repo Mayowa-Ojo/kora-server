@@ -464,6 +464,7 @@ func (u *UserService) FollowUser(ctx *fiber.Ctx) (*entity.User, error) {
 
 	filter = bson.D{{Key: "_id", Value: userObjectID}}
 	opts := options.FindOne()
+	opts.SetProjection(bson.D{{Key: "hash", Value: 0}})
 
 	user, err := u.userRepo.GetOne(ctx, filter, opts)
 	if err != nil {
@@ -501,6 +502,7 @@ func (u *UserService) UnfollowUser(ctx *fiber.Ctx) (*entity.User, error) {
 
 	filter = bson.D{{Key: "_id", Value: userObjectID}}
 	opts := options.FindOne()
+	opts.SetProjection(bson.D{{Key: "hash", Value: 0}})
 
 	user, err := u.userRepo.GetOne(ctx, filter, opts)
 	if err != nil {
