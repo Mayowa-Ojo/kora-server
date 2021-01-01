@@ -98,6 +98,12 @@ func (s *SpaceService) Create(ctx *fiber.Ctx) (*entity.Space, error) {
 		return nil, constants.ErrUnprocessableEntity
 	}
 
+	userID, err := utils.GetJwtClaims(ctx, "userId")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, constants.ErrUnauthorized
+	}
+
 	slug := utils.GenerateSlug(requestBody.Name)
 
 	instance := &entity.Space{
@@ -118,6 +124,11 @@ func (s *SpaceService) Create(ctx *fiber.Ctx) (*entity.Space, error) {
 	}
 
 	filter := bson.D{{Key: "_id", Value: insertResult.InsertedID}}
+	update := bson.D{{Key: "$addToSet", Value: bson.D{{Key: "admins", Value: userObjectID}}}}
+	if _, err := s.spaceRepo.UpdateOne(ctx, filter, update); err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
 	opts := options.FindOne()
 	space, err := s.spaceRepo.GetOne(ctx, filter, opts)
 	if err != nil {
@@ -190,12 +201,13 @@ func (s *SpaceService) GetMembersForSpace(ctx *fiber.Ctx) (types.GenericMap, err
 	followers, err := s.userRepo.GetMany(ctx, filter, opts)
 
 	filter = bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: space.Contributors}}}}
-	opts = options.Find()
 	contributors, err := s.userRepo.GetMany(ctx, filter, opts)
 
 	filter = bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: space.Moderators}}}}
-	opts = options.Find()
 	moderators, err := s.userRepo.GetMany(ctx, filter, opts)
+
+	filter = bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: space.Admins}}}}
+	admins, err := s.userRepo.GetMany(ctx, filter, opts)
 
 	if err != nil {
 		return nil, constants.ErrInternalServer
@@ -205,6 +217,7 @@ func (s *SpaceService) GetMembersForSpace(ctx *fiber.Ctx) (types.GenericMap, err
 		"followers":    followers,
 		"contributors": contributors,
 		"moderators":   moderators,
+		"admins":       admins,
 	}
 
 	return result, nil
@@ -315,63 +328,81 @@ func (s *SpaceService) DeleteSpaceByAdmin(ctx *fiber.Ctx) error {
 }
 
 // FollowSpace -
-func (s *SpaceService) FollowSpace(ctx *fiber.Ctx) error {
+func (s *SpaceService) FollowSpace(ctx *fiber.Ctx) (*entity.User, error) {
 	spaceID := ctx.Params("id")
 	spaceObjectID, err := primitive.ObjectIDFromHex(spaceID)
 	if err != nil {
-		return constants.ErrUnprocessableEntity
+		return nil, constants.ErrUnprocessableEntity
 	}
 
-	user, err := utils.GetUserFromAuthHeader(ctx, s.userRepo)
+	userID, err := utils.GetJwtClaims(ctx, "userId")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return constants.ErrUnauthorized
+		return nil, constants.ErrUnauthorized
 	}
 
 	filter := bson.D{{Key: "_id", Value: spaceObjectID}}
-	update := bson.D{{Key: "$push", Value: bson.D{{Key: "followers", Value: user.ID}}}}
+	update := bson.D{{Key: "$addToSet", Value: bson.D{{Key: "followers", Value: userObjectID}}}}
 	_, err = s.spaceRepo.UpdateOne(ctx, filter, update)
 	if err != nil {
-		return constants.ErrInternalServer
+		return nil, constants.ErrInternalServer
 	}
 
-	filter = bson.D{{Key: "_id", Value: user.ID}}
-	update = bson.D{{Key: "$push", Value: bson.D{{Key: "spaces", Value: spaceObjectID}}}}
+	filter = bson.D{{Key: "_id", Value: userObjectID}}
+	update = bson.D{{Key: "$addToSet", Value: bson.D{{Key: "spaces", Value: spaceObjectID}}}}
 	_, err = s.userRepo.UpdateOne(ctx, filter, update)
 	if err != nil {
-		return constants.ErrInternalServer
+		return nil, constants.ErrInternalServer
 	}
 
-	return nil
+	filter = bson.D{{Key: "_id", Value: userObjectID}}
+	opts := options.FindOne()
+
+	user, err := s.userRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return user, nil
 }
 
 // UnfollowSpace -
-func (s *SpaceService) UnfollowSpace(ctx *fiber.Ctx) error {
+func (s *SpaceService) UnfollowSpace(ctx *fiber.Ctx) (*entity.User, error) {
 	spaceID := ctx.Params("id")
 	spaceObjectID, err := primitive.ObjectIDFromHex(spaceID)
 	if err != nil {
-		return constants.ErrUnprocessableEntity
+		return nil, constants.ErrUnprocessableEntity
 	}
 
-	user, err := utils.GetUserFromAuthHeader(ctx, s.userRepo)
+	userID, err := utils.GetJwtClaims(ctx, "userId")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return constants.ErrUnauthorized
+		return nil, constants.ErrUnauthorized
 	}
 
 	filter := bson.D{{Key: "_id", Value: spaceObjectID}}
-	update := bson.D{{Key: "$pull", Value: bson.D{{Key: "followers", Value: user.ID}}}}
+	update := bson.D{{Key: "$pull", Value: bson.D{{Key: "followers", Value: userObjectID}}}}
 	_, err = s.spaceRepo.UpdateOne(ctx, filter, update)
 	if err != nil {
-		return constants.ErrInternalServer
+		return nil, constants.ErrInternalServer
 	}
 
-	filter = bson.D{{Key: "_id", Value: user.ID}}
+	filter = bson.D{{Key: "_id", Value: userObjectID}}
 	update = bson.D{{Key: "$pull", Value: bson.D{{Key: "spaces", Value: spaceObjectID}}}}
 	_, err = s.userRepo.UpdateOne(ctx, filter, update)
 	if err != nil {
-		return constants.ErrInternalServer
+		return nil, constants.ErrInternalServer
 	}
 
-	return nil
+	filter = bson.D{{Key: "_id", Value: userObjectID}}
+	opts := options.FindOne()
+
+	user, err := s.userRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return user, nil
 }
 
 // SetPinnedPost -
