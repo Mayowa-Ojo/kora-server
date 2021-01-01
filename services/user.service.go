@@ -437,59 +437,77 @@ func (u *UserService) GetKnowledgeForUser(ctx *fiber.Ctx) ([]entity.Topic, error
 }
 
 // FollowUser -
-func (u *UserService) FollowUser(ctx *fiber.Ctx) error {
-	user, err := utils.GetUserFromAuthHeader(ctx, u.userRepo)
+func (u *UserService) FollowUser(ctx *fiber.Ctx) (*entity.User, error) {
+	userID, err := utils.GetJwtClaims(ctx, "userId")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return constants.ErrUnauthorized
+		return nil, constants.ErrUnauthorized
 	}
 
-	followedUserID := ctx.Query("userId")
+	followedUserID := ctx.Params("id")
 	followedUserObjectID, err := primitive.ObjectIDFromHex(followedUserID)
 	if err != nil {
-		return constants.ErrInternalServer
+		return nil, constants.ErrInternalServer
 	}
 
 	filter := bson.D{{Key: "_id", Value: followedUserObjectID}}
-	update := bson.D{{Key: "$push", Value: bson.D{{Key: "followers", Value: user.ID}}}}
+	update := bson.D{{Key: "$addToSet", Value: bson.D{{Key: "followers", Value: userObjectID}}}}
 	if _, err := u.userRepo.UpdateOne(ctx, filter, update); err != nil {
-		return constants.ErrInternalServer
+		return nil, constants.ErrInternalServer
 	}
 
-	filter = bson.D{{Key: "_id", Value: user.ID}}
-	update = bson.D{{Key: "$push", Value: bson.D{{Key: "following", Value: followedUserObjectID}}}}
+	filter = bson.D{{Key: "_id", Value: userObjectID}}
+	update = bson.D{{Key: "$addToSet", Value: bson.D{{Key: "following", Value: followedUserObjectID}}}}
 	if _, err := u.userRepo.UpdateOne(ctx, filter, update); err != nil {
-		return constants.ErrInternalServer
+		return nil, constants.ErrInternalServer
 	}
 
-	return nil
+	filter = bson.D{{Key: "_id", Value: userObjectID}}
+	opts := options.FindOne()
+
+	user, err := u.userRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return user, nil
 }
 
 // UnfollowUser -
-func (u *UserService) UnfollowUser(ctx *fiber.Ctx) error {
-	user, err := utils.GetUserFromAuthHeader(ctx, u.userRepo)
+func (u *UserService) UnfollowUser(ctx *fiber.Ctx) (*entity.User, error) {
+	userID, err := utils.GetJwtClaims(ctx, "userId")
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return constants.ErrUnauthorized
+		return nil, constants.ErrUnauthorized
 	}
 
-	followedUserID := ctx.Query("userId")
+	followedUserID := ctx.Params("id")
 	followedUserObjectID, err := primitive.ObjectIDFromHex(followedUserID)
 	if err != nil {
-		return constants.ErrInternalServer
+		return nil, constants.ErrInternalServer
 	}
 
 	filter := bson.D{{Key: "_id", Value: followedUserObjectID}}
-	update := bson.D{{Key: "$pull", Value: bson.D{{Key: "followers", Value: user.ID}}}}
+	update := bson.D{{Key: "$pull", Value: bson.D{{Key: "followers", Value: userObjectID}}}}
 	if _, err := u.userRepo.UpdateOne(ctx, filter, update); err != nil {
-		return constants.ErrInternalServer
+		return nil, constants.ErrInternalServer
 	}
 
-	filter = bson.D{{Key: "_id", Value: user.ID}}
+	filter = bson.D{{Key: "_id", Value: userObjectID}}
 	update = bson.D{{Key: "$pull", Value: bson.D{{Key: "following", Value: followedUserObjectID}}}}
 	if _, err := u.userRepo.UpdateOne(ctx, filter, update); err != nil {
-		return constants.ErrInternalServer
+		return nil, constants.ErrInternalServer
 	}
 
-	return nil
+	filter = bson.D{{Key: "_id", Value: userObjectID}}
+	opts := options.FindOne()
+
+	user, err := u.userRepo.GetOne(ctx, filter, opts)
+	if err != nil {
+		return nil, constants.ErrInternalServer
+	}
+
+	return user, nil
 }
 
 // SetPinnedPost -
