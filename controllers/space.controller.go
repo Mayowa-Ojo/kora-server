@@ -136,26 +136,28 @@ func (s *SpaceController) DeleteSpaceByAdmin(ctx *fiber.Ctx) {
 
 // FollowSpace -
 func (s *SpaceController) FollowSpace(ctx *fiber.Ctx) {
-	if err := s.spaceService.FollowSpace(ctx); err != nil {
+	user, err := s.spaceService.FollowSpace(ctx)
+	if err != nil {
 		ctx.Next(err)
 
 		return
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", nil)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", user)
 }
 
 // UnfollowSpace -
 func (s *SpaceController) UnfollowSpace(ctx *fiber.Ctx) {
-	if err := s.spaceService.UnfollowSpace(ctx); err != nil {
+	user, err := s.spaceService.UnfollowSpace(ctx)
+	if err != nil {
 		ctx.Next(err)
 
 		return
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", nil)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", user)
 }
 
 // SetPinnedPost -

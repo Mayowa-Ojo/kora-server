@@ -163,26 +163,28 @@ func (u *UserController) GetSpacesForUser(ctx *fiber.Ctx) {
 
 // FollowUser -
 func (u *UserController) FollowUser(ctx *fiber.Ctx) {
-	if err := u.userService.FollowUser(ctx); err != nil {
+	user, err := u.userService.FollowUser(ctx)
+	if err != nil {
 		ctx.Next(err)
 
 		return
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", nil)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", user)
 }
 
 // UnfollowUser -
 func (u *UserController) UnfollowUser(ctx *fiber.Ctx) {
-	if err := u.userService.UnfollowUser(ctx); err != nil {
+	user, err := u.userService.UnfollowUser(ctx)
+	if err != nil {
 		ctx.Next(err)
 
 		return
 	}
 
 	r := utils.NewResponse()
-	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", nil)
+	r.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource updated", user)
 }
 
 // SetPinnedPost -
