@@ -10,6 +10,7 @@ import (
 type EnvConfig struct {
 	DBName             string `mapstructure:"DB_NAME"`
 	Port               int    `mapstructure:"PORT"`
+	ClientHostname     string `mapstructure:"CLIENT_HOSTNAME"`
 	JwtSecret          string `mapstructure:"JWT_SECRET"`
 	AwsAccessKeyID     string `mapstructure:"AWS_ACCESS_KEY_ID"`
 	AwsSecretAccessKey string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
