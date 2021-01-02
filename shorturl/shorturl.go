@@ -14,7 +14,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var conn *config.DBConn
+var (
+	conn *config.DBConn
+	env  = config.NewEnvConfig()
+)
 
 // URL - database schema for URL collection
 type URL struct {
@@ -33,7 +36,7 @@ func InitShortURLService(app *fiber.App, c *config.DBConn) {
 	baseRouter := app.Group("/api/v1")
 	router := baseRouter.Group("/urls")
 
-	router.Get("/:urlCode", getURL(conn))
+	router.Get("/:shortCode", getURL(conn))
 }
 
 // CreateURL - generates a tiny url link for a post
@@ -42,13 +45,13 @@ func CreateURL(ctx *fiber.Ctx, payload types.GenericMap) (*URL, error) {
 	col := conn.DB.Collection("urls")
 
 	if _, ok := payload["username"]; !ok {
-		return nil, constants.ErrInvalidCredentials
+		return nil, constants.ErrUnprocessableEntity
 	}
 	if _, ok := payload["slug"]; !ok {
-		return nil, constants.ErrInvalidCredentials
+		return nil, constants.ErrUnprocessableEntity
 	}
 	if _, ok := payload["postType"]; !ok {
-		return nil, constants.ErrInvalidCredentials
+		return nil, constants.ErrUnprocessableEntity
 	}
 
 	shortCode, err := utils.GenerateID()
@@ -56,14 +59,13 @@ func CreateURL(ctx *fiber.Ctx, payload types.GenericMap) (*URL, error) {
 		return nil, constants.ErrInternalServer
 	}
 
-	// NOTE: get client domain from env <production>
 	var longURL string
 	if payload["postType"] == "answer" {
-		longURL = fmt.Sprintf("http://localhost:8080/%s/%s/%s", payload["postType"], payload["slug"], payload["username"])
+		longURL = fmt.Sprintf("%s/%s/%s/%s", env.ClientHostname, payload["slug"], payload["postType"], payload["username"])
 	} else {
-		longURL = fmt.Sprintf("http://localhost:8080/%s/%s", payload["postType"], payload["slug"])
+		longURL = fmt.Sprintf("%s/%s/%s", env.ClientHostname, payload["postType"], payload["slug"])
 	}
-	shortURL := fmt.Sprintf("http://localhost:8080/bit/%s", shortCode)
+	shortURL := fmt.Sprintf("%s/bit/%s", env.ClientHostname, shortCode)
 
 	instance := &URL{
 		LongURL:   longURL,
@@ -105,8 +107,10 @@ func getURL(conn *config.DBConn) fiber.Handler {
 			return
 		}
 
+		time.Sleep(time.Second * 2)
+
 		resp := utils.NewResponse()
-		resp.JSONResponse(ctx, true, fiber.StatusFound, "[INFO]: Resource found", url)
+		resp.JSONResponse(ctx, true, fiber.StatusOK, "[INFO]: Resource found", url)
 	}
 }
 
