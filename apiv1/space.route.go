@@ -33,7 +33,7 @@ func NewSpaceRouter(br fiber.Router, conn *config.DBConn) {
 	router.Get("/:id/posts", middleware.AuthorizeRoute(), spaceController.GetPostsForSpace)
 	router.Get("/:id/people", middleware.AuthorizeRoute(), spaceController.GetMembersForSpace)
 	router.Patch("/:id", middleware.AuthorizeRoute(), spaceController.UpdateProfileByAdmin)
-	router.Patch("/:/follow", middleware.AuthorizeRoute(), spaceController.FollowSpace)
+	router.Patch("/:id/follow", middleware.AuthorizeRoute(), spaceController.FollowSpace)
 	router.Patch("/:id/unfollow", middleware.AuthorizeRoute(), spaceController.UnfollowSpace)
 	router.Patch("/:id/pin", middleware.AuthorizeRoute(), spaceController.SetPinnedPost)
 	router.Patch("/:id/unpin", middleware.AuthorizeRoute(), spaceController.UnsetPinnedPost)
