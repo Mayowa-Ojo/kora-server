@@ -208,7 +208,7 @@ func (p PostService) Create(ctx *fiber.Ctx) (*entity.Post, error) {
 
 	filter := bson.D{{Key: "_id", Value: insertResult.InsertedID}}
 	opts := options.FindOne()
-	opts.SetProjection(bson.D{{}})
+
 	post, err := p.postRepo.GetOne(ctx, filter, opts)
 	if err != nil {
 		return nil, constants.ErrInternalServer
@@ -227,6 +227,23 @@ func (p PostService) Create(ctx *fiber.Ctx) (*entity.Post, error) {
 
 		_, err = p.spaceRepo.UpdateOne(ctx, filter, update)
 		if err != nil {
+			return nil, constants.ErrInternalServer
+		}
+	}
+
+	if requestBody.PostType == "answer" {
+		questionID := ctx.Query("questionId")
+		questionObjectID, err := primitive.ObjectIDFromHex(questionID)
+		if err != nil {
+			return nil, constants.ErrUnprocessableEntity
+		}
+
+		filter := bson.D{{Key: "_id", Value: questionObjectID}}
+		update := bson.D{
+			{Key: "$push", Value: bson.D{{Key: "answers", Value: post.ID}}},
+		}
+
+		if _, err := p.postRepo.UpdateOne(ctx, filter, update); err != nil {
 			return nil, constants.ErrInternalServer
 		}
 	}
