@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Mayowa-Ojo/kora/constants"
 	"github.com/Mayowa-Ojo/kora/domain"
@@ -64,6 +65,8 @@ func (u *UserService) GetOne(ctx *fiber.Ctx) (*entity.User, error) {
 
 		return nil, constants.ErrInternalServer
 	}
+
+	time.Sleep(time.Second * 2)
 
 	return user, nil
 }
