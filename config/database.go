@@ -20,7 +20,7 @@ var conn DBConn
 
 // InitDB - create a mongo connection
 func InitDB(env *EnvConfig) (*DBConn, error) {
-	mongoURI := fmt.Sprintf("mongodb://localhost/%s", env.DBName)
+	mongoURI := fmt.Sprintf("%s", env.DBUri)
 	clientOptions := options.Client().ApplyURI(mongoURI)
 
 	client, err := mongo.NewClient(clientOptions)

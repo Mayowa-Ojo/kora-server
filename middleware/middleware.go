@@ -3,16 +3,21 @@ package middleware
 import (
 	"os"
 
+	"github.com/Mayowa-Ojo/kora/config"
 	"github.com/gofiber/cors"
 	"github.com/gofiber/fiber"
 	"github.com/gofiber/fiber/middleware"
 	"github.com/gofiber/helmet"
 )
 
+var (
+	env = config.NewEnvConfig()
+)
+
 // InitMiddlewares -
 func InitMiddlewares(app *fiber.App) {
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:8080"},
+		AllowOrigins:     []string{env.ClientHostname},
 		AllowCredentials: true,
 	}))
 
