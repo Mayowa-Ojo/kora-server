@@ -259,11 +259,26 @@ func (c *CommentService) UpvoteCommentByUser(ctx *fiber.Ctx) (*entity.Comment, e
 
 	filter = bson.D{{Key: "_id", Value: commentObjectID}}
 	opts := options.FindOne()
+	opts.SetProjection(bson.D{{Key: "author.hash", Value: 0}})
 
 	comment, err := c.commentRepo.GetOne(ctx, filter, opts)
 	if err != nil {
 		fmt.Println(err)
 		return nil, constants.ErrInternalServer
+	}
+
+	if comment.Replies == nil {
+		filter := bson.D{
+			{Key: "_id", Value: comment.ResponseTo},
+			{Key: "replies._id", Value: commentObjectID},
+		}
+		update := bson.D{
+			{Key: "$inc", Value: bson.D{{Key: "replies.$.upvotes", Value: 1}}},
+		}
+
+		if _, err := c.commentRepo.UpdateOne(ctx, filter, update); err != nil {
+			return nil, constants.ErrInternalServer
+		}
 	}
 
 	return comment, nil
