@@ -8,8 +8,9 @@ import (
 
 // EnvConfig -
 type EnvConfig struct {
-	DBName             string `mapstructure:"DB_NAME"`
 	Port               int    `mapstructure:"PORT"`
+	DBName             string `mapstructure:"DB_NAME"`
+	DBUri              string `mapstructure:"DB_URI"`
 	ClientHostname     string `mapstructure:"CLIENT_HOSTNAME"`
 	JwtSecret          string `mapstructure:"JWT_SECRET"`
 	AwsAccessKeyID     string `mapstructure:"AWS_ACCESS_KEY_ID"`
