@@ -63,6 +63,7 @@ func (u *UserService) GetOne(ctx *fiber.Ctx) (*entity.User, error) {
 			return nil, constants.ErrNotFound
 		}
 
+		fmt.Println("[DEBUG] --service: \n", err)
 		return nil, constants.ErrInternalServer
 	}
 
