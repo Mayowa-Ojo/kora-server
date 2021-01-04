@@ -2,9 +2,9 @@ package config
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/mitchellh/mapstructure"
 )
 
 // EnvConfig -
@@ -22,21 +22,22 @@ type EnvConfig struct {
 
 // NewEnvConfig -
 func NewEnvConfig() *EnvConfig {
-	var env map[string]string
+	// var env map[string]string
 	var config EnvConfig
 
 	if err := godotenv.Load(); err != nil {
 		fmt.Printf("[Error]: could not load env file. %s", err)
 	}
 
-	env, err := godotenv.Read()
-	if err != nil {
-		fmt.Printf("[Error]: could not read env file. %s", err)
-	}
-
-	if err = mapstructure.Decode(env, &config); err != nil {
-		fmt.Printf("[Error]: error decoding map structure. %s", err)
-	}
+	config.Port = os.Getenv("PORT")
+	config.DBName = os.Getenv("DB_NAME")
+	config.DBUri = os.Getenv("DB_URI")
+	config.ClientHostname = os.Getenv("CLIENT_HOSTNAME")
+	config.JwtSecret = os.Getenv("JWT_SECRET")
+	config.AwsAccessKeyID = os.Getenv("AWS_ACCESS_KEY_ID")
+	config.AwsSecretAccessKey = os.Getenv("AWS_SECRET_ACCESS_KEY")
+	config.AwsRegion = os.Getenv("AWS_REGION")
+	config.AwsS3Bucket = os.Getenv("AWS_S3_BUCKET")
 
 	return &config
 }
