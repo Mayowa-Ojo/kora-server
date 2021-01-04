@@ -14,8 +14,7 @@ require (
 	github.com/gofiber/helmet v0.1.2
 	github.com/gofiber/jwt v0.2.0
 	github.com/joho/godotenv v1.3.0
-	github.com/mitchellh/mapstructure v1.4.0
-	github.com/spf13/viper v1.7.1
+	github.com/teris-io/shortid v0.0.0-20201117134242-e59966efd125 // indirect
 	github.com/ventu-io/go-shortid v0.0.0-20201117134242-e59966efd125
 	go.mongodb.org/mongo-driver v1.4.4
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
