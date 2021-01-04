@@ -1,1 +1,1 @@
-web: build/kora-server
+web: bin/kora-server
