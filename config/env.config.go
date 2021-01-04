@@ -3,12 +3,13 @@ package config
 import (
 	"fmt"
 
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
+	"github.com/mitchellh/mapstructure"
 )
 
 // EnvConfig -
 type EnvConfig struct {
-	Port               int    `mapstructure:"PORT"`
+	Port               string `mapstructure:"PORT"`
 	DBName             string `mapstructure:"DB_NAME"`
 	DBUri              string `mapstructure:"DB_URI"`
 	ClientHostname     string `mapstructure:"CLIENT_HOSTNAME"`
@@ -21,20 +22,21 @@ type EnvConfig struct {
 
 // NewEnvConfig -
 func NewEnvConfig() *EnvConfig {
-	var env *EnvConfig
-	v := viper.New()
+	var env map[string]string
+	var config EnvConfig
 
-	v.SetConfigFile(".env")
-	v.SetConfigType("env")
-	v.AutomaticEnv()
+	if err := godotenv.Load(); err != nil {
+		fmt.Printf("[Error]: could not load env file. %s", err)
+	}
 
-	if err := v.ReadInConfig(); err != nil {
+	env, err := godotenv.Read()
+	if err != nil {
 		fmt.Printf("[Error]: could not read env file. %s", err)
 	}
 
-	if err := v.Unmarshal(&env); err != nil {
-		fmt.Printf("[Error]: could not decode env variables. %s", err)
+	if err = mapstructure.Decode(env, &config); err != nil {
+		fmt.Printf("[Error]: error decoding map structure. %s", err)
 	}
 
-	return env
+	return &config
 }
