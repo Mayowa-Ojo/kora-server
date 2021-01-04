@@ -3,10 +3,10 @@ package services
 import (
 	"fmt"
 
-	"github.com/Mayowa-Ojo/kora/constants"
-	"github.com/Mayowa-Ojo/kora/domain"
-	"github.com/Mayowa-Ojo/kora/entity"
-	"github.com/Mayowa-Ojo/kora/utils"
+	"github.com/Mayowa-Ojo/kora-server/constants"
+	"github.com/Mayowa-Ojo/kora-server/domain"
+	"github.com/Mayowa-Ojo/kora-server/entity"
+	"github.com/Mayowa-Ojo/kora-server/utils"
 	"github.com/gofiber/fiber"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

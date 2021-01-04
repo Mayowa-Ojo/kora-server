@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"github.com/Mayowa-Ojo/kora/config"
-	"github.com/Mayowa-Ojo/kora/constants"
-	"github.com/Mayowa-Ojo/kora/entity"
-	"github.com/Mayowa-Ojo/kora/utils"
+	"github.com/Mayowa-Ojo/kora-server/config"
+	"github.com/Mayowa-Ojo/kora-server/constants"
+	"github.com/Mayowa-Ojo/kora-server/entity"
+	"github.com/Mayowa-Ojo/kora-server/utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber"
 	jwtware "github.com/gofiber/jwt"

@@ -3,11 +3,11 @@ package services
 import (
 	"fmt"
 
-	"github.com/Mayowa-Ojo/kora/constants"
-	"github.com/Mayowa-Ojo/kora/domain"
-	"github.com/Mayowa-Ojo/kora/entity"
-	"github.com/Mayowa-Ojo/kora/types"
-	"github.com/Mayowa-Ojo/kora/utils"
+	"github.com/Mayowa-Ojo/kora-server/constants"
+	"github.com/Mayowa-Ojo/kora-server/domain"
+	"github.com/Mayowa-Ojo/kora-server/entity"
+	"github.com/Mayowa-Ojo/kora-server/types"
+	"github.com/Mayowa-Ojo/kora-server/utils"
 	snake "github.com/Mayowa-Ojo/rattle-snake"
 	"github.com/fatih/structs"
 	"github.com/gofiber/fiber"

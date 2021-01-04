@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"github.com/Mayowa-Ojo/kora/domain"
-	"github.com/Mayowa-Ojo/kora/utils"
+	"github.com/Mayowa-Ojo/kora-server/domain"
+	"github.com/Mayowa-Ojo/kora-server/utils"
 	"github.com/gofiber/fiber"
 )
 

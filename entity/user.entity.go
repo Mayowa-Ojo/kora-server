@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Mayowa-Ojo/kora/constants"
+	"github.com/Mayowa-Ojo/kora-server/constants"
 
 	validation "github.com/go-ozzo/ozzo-validation"
 	"go.mongodb.org/mongo-driver/bson/primitive"

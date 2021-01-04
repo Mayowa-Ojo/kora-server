@@ -1,7 +1,7 @@
 package apiv1
 
 import (
-	"github.com/Mayowa-Ojo/kora/config"
+	"github.com/Mayowa-Ojo/kora-server/config"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/gofiber/fiber"
 )

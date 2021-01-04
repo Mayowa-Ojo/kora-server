@@ -1,8 +1,8 @@
 package domain
 
 import (
-	"github.com/Mayowa-Ojo/kora/entity"
-	"github.com/Mayowa-Ojo/kora/types"
+	"github.com/Mayowa-Ojo/kora-server/entity"
+	"github.com/Mayowa-Ojo/kora-server/types"
 	"github.com/gofiber/fiber"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

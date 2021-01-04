@@ -1,10 +1,10 @@
 package repository
 
 import (
-	"github.com/Mayowa-Ojo/kora/config"
-	"github.com/Mayowa-Ojo/kora/domain"
-	"github.com/Mayowa-Ojo/kora/entity"
-	"github.com/Mayowa-Ojo/kora/types"
+	"github.com/Mayowa-Ojo/kora-server/config"
+	"github.com/Mayowa-Ojo/kora-server/domain"
+	"github.com/Mayowa-Ojo/kora-server/entity"
+	"github.com/Mayowa-Ojo/kora-server/types"
 	"github.com/gofiber/fiber"
 	"go.mongodb.org/mongo-driver/bson"
 	mg "go.mongodb.org/mongo-driver/mongo"

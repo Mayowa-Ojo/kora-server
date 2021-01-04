@@ -3,7 +3,7 @@ package middleware
 import (
 	"os"
 
-	"github.com/Mayowa-Ojo/kora/config"
+	"github.com/Mayowa-Ojo/kora-server/config"
 	"github.com/gofiber/cors"
 	"github.com/gofiber/fiber"
 	"github.com/gofiber/fiber/middleware"

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Mayowa-Ojo/kora/constants"
-	"github.com/Mayowa-Ojo/kora/types"
-	"github.com/Mayowa-Ojo/kora/utils"
+	"github.com/Mayowa-Ojo/kora-server/constants"
+	"github.com/Mayowa-Ojo/kora-server/types"
+	"github.com/Mayowa-Ojo/kora-server/utils"
 
-	"github.com/Mayowa-Ojo/kora/config"
+	"github.com/Mayowa-Ojo/kora-server/config"
 	"github.com/gofiber/fiber"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

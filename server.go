@@ -3,12 +3,12 @@ package main
 import (
 	"log"
 
-	"github.com/Mayowa-Ojo/kora/shorturl"
+	"github.com/Mayowa-Ojo/kora-server/shorturl"
 
-	"github.com/Mayowa-Ojo/kora/apiv1"
-	"github.com/Mayowa-Ojo/kora/config"
-	"github.com/Mayowa-Ojo/kora/middleware"
-	"github.com/Mayowa-Ojo/kora/utils"
+	"github.com/Mayowa-Ojo/kora-server/apiv1"
+	"github.com/Mayowa-Ojo/kora-server/config"
+	"github.com/Mayowa-Ojo/kora-server/middleware"
+	"github.com/Mayowa-Ojo/kora-server/utils"
 	"github.com/gofiber/fiber"
 )
 

@@ -3,9 +3,9 @@ package services
 import (
 	"strings"
 
-	"github.com/Mayowa-Ojo/kora/constants"
-	"github.com/Mayowa-Ojo/kora/domain"
-	"github.com/Mayowa-Ojo/kora/types"
+	"github.com/Mayowa-Ojo/kora-server/constants"
+	"github.com/Mayowa-Ojo/kora-server/domain"
+	"github.com/Mayowa-Ojo/kora-server/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"

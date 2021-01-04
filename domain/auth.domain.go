@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/Mayowa-Ojo/kora/types"
+	"github.com/Mayowa-Ojo/kora-server/types"
 	"github.com/gofiber/fiber"
 )
 
